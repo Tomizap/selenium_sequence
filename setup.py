@@ -9,14 +9,18 @@ Simple Python Package
 """
 
 setup(
-    name="sample",
+    name="selenium_sequence",
     version=VERSION,
     author="TZ",
-    author_email="<zaptom.pro@gmail.com>",
+    author_email="zaptom.pro@gmail.com",
     description=DESCRIPTION,
     long_description_content_type="text/markdown",
     packages=find_packages(),
-    install_requires=[],
+    install_requires=[
+        "selenium",
+        "colorama",
+        "requests",
+        "selenium_driver @ git+https://github.com/Tomizap/selenium_driver.git#egg=selenium_driver"],
     keywords=[],
     classifiers=[]
 )
