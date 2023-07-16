@@ -18,6 +18,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "selenium",
+        "flask",
         "colorama",
         "requests",
         "selenium_driver @ git+https://github.com/Tomizap/selenium_driver.git#egg=selenium_driver"],

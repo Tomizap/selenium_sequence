@@ -98,6 +98,7 @@ all_models = [
     {
         "website": "lannuaire.service-public.fr",
         "type": "city_halls",
+        "require_auth": False,
         "RegexUrl": ["/navigation/ile-de-france/mairie"],
         "sequence": {
             ":loop": {
@@ -113,6 +114,7 @@ all_models = [
     {
         "website": "lannuaire.service-public.fr",
         "type": "item",
+        "require_auth": False,
         "RegexUrl": ["/ile-de-france/"],
         "sequence": {
             "NAME:get": 'h1[itemprop="name"]',
@@ -139,12 +141,14 @@ all_models = [
     {
         "website": "pagesjaunes.fr",
         "type": "city_halls",
+        "require_auth": False,
         "RegexUrl": ["/"],
         "sequence": {}
     },
     {
         "website": "pagesjaunes.fr",
         "type": "item",
+        "require_auth": False,
         "RegexUrl": ["/"],
         "sequence": {}
     },
@@ -153,6 +157,7 @@ all_models = [
     {
         "website": "linkedin.com",
         "type": "jobs",
+        "require_auth": True,
         "RegexUrl": ["/jobs/search"],
         "sequence": {
             ":loop": {
@@ -170,6 +175,7 @@ all_models = [
     {
         "website": "linkedin.com",
         "type": "job",
+        "require_auth": True,
         "RegexUrl": ["/jobs/view"],
         "sequence": {
             # JOB
@@ -197,6 +203,7 @@ all_models = [
     {
         "website": "linkedin.com",
         "type": "companies",
+        "require_auth": True,
         "RegexUrl": ["/search/results/companies"],
         "sequence": {
             ":loop": {
@@ -212,12 +219,14 @@ all_models = [
     {
         "website": "linkedin.com",
         "type": "company",
+        "require_auth": True,
         "RegexUrl": ["/company/"],
         "sequence": sequences['linkedin']['COMPANY']
     },
     {
         "website": "linkedin.com",
         "type": "school",
+        "require_auth": True,
         "RegexUrl": ["/school/"],
         "sequence": sequences['linkedin']['COMPANY']
     },
@@ -225,6 +234,7 @@ all_models = [
     {
         "website": "linkedin.com",
         "type": "peoples",
+        "require_auth": True,
         "RegexUrl": ["/search/results/people"],
         "sequence": {
             ":loop": {
@@ -240,6 +250,7 @@ all_models = [
     {
         "website": "linkedin.com",
         "type": "people",
+        "require_auth": True,
         "RegexUrl": ["/in/"],
         "sequence": sequences['linkedin']['PEOPLE']
     },
@@ -247,6 +258,7 @@ all_models = [
     {
         "website": "indeed.com",
         "type": "jobs",
+        "require_auth": True,
         "RegexUrl": ["/jobs", "/emplois", ""],
         "sequence": {
             ":loop": {
@@ -263,6 +275,7 @@ all_models = [
     {
         "website": "indeed.com",
         "type": "job",
+        "require_auth": True,
         "RegexUrl": ["/viewjob", '/job/'],
         "sequence": {
             "JOB_TITLE:get": "h1 > span",
@@ -288,6 +301,7 @@ all_models = [
     {
         "website": "indeed.com",
         "type": "company",
+        "require_auth": True,
         "RegexUrl": ["/cmp/"],
         "sequence": {
             "COMPANY_NAME:get": 'header > h2',
@@ -316,6 +330,7 @@ all_models = [
     {
         "website": "pole-emploi.com",
         "type": "jobs",
+        "require_auth": True,
         "RegexUrl": ["/offres/recherche"],
         "sequence": {
             ":loop": {
@@ -335,6 +350,7 @@ all_models = [
     {
         "website": "pole-emploi.com",
         "type": "job",
+        "require_auth": True,
         "RegexUrl": ["/offres/recherche/detail/"],
         "sequence": {
             "JOB_NAME:get": "#labelPopinDetailsOffre > span:last-child",
@@ -357,6 +373,7 @@ all_models = [
     {
         "website": "pole-emploi.com",
         "type": "company",
+        "require_auth": True,
         "RegexUrl": ["/page-entreprise"],
         "sequence": {
             "COMPANY_NAME:get": "h1",
@@ -393,3 +410,7 @@ def find_model(url=None, models=None):
     print(url)
     print(Fore.RED + 'Aucun modèle')
     print(Style.RESET_ALL)
+    return {
+        "message": 'No model found',
+        "sequence": {}
+    }
