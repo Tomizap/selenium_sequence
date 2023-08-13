@@ -97,7 +97,7 @@ all_models = [
     # --- lannuaire.service-public.fr ---
     {
         "website": "lannuaire.service-public.fr",
-        "type": "city_halls",
+        "type": "company",
         "require_auth": False,
         "RegexUrl": ["/navigation/ile-de-france/mairie"],
         "sequence": {
@@ -113,7 +113,7 @@ all_models = [
     },
     {
         "website": "lannuaire.service-public.fr",
-        "type": "item",
+        "type": "company",
         "require_auth": False,
         "RegexUrl": ["/ile-de-france/"],
         "sequence": {
@@ -129,7 +129,7 @@ all_models = [
     # --- google.com ---
     {
         "website": "google.com",
-        "type": "city_halls",
+        "type": "company",
         "RegexUrl": ["/maps/search"],
         "sequence": {
             ":googlemaps": {
@@ -137,17 +137,46 @@ all_models = [
             }
         }
     },
+    # --- 123ecoles.com ---
+    {
+        "website": "123ecoles.com",
+        "type": "school",
+        "require_auth": True,
+        "RegexUrl": ["/etablissements-scolaires-"],
+        "sequence": {
+            ":loop": {
+                "pagination": 1,
+                # "pagination": 'div.jobs-search-results-list__pagination li:last-child',
+                "listing": {
+                    ":get:all": {"property": "href", "selector": '.list-group-item > a'},
+                },
+            }
+        }
+    },
+    {
+        "website": "123ecoles.com",
+        "type": "school",
+        "require_auth": True,
+        "RegexUrl": ["/"],
+        "sequence": {
+            f"COMPANY:get": "body > div.main-wrap > div.main.ts-contain.cf.right-sidebar > div > div > div.the-post-header.s-head-modern.s-head-modern-a.has-share-meta-right > div > h1",
+            # f"CONTACT:get": "#post-13703 > div > div > div:nth-child(13) > div",
+            f"EMAIL:find:email": "",
+            f"PHONE:find:phone": "",
+            f"ADDRESS:GET": "#post-13703 > div > div > div:nth-child(15) > div"
+        }
+    },
     # --- pagesjaunes.fr ---
     {
         "website": "pagesjaunes.fr",
-        "type": "city_halls",
+        "type": "company",
         "require_auth": False,
         "RegexUrl": ["/"],
         "sequence": {}
     },
     {
         "website": "pagesjaunes.fr",
-        "type": "item",
+        "type": "company",
         "require_auth": False,
         "RegexUrl": ["/"],
         "sequence": {}
@@ -169,6 +198,7 @@ all_models = [
                                  "selector": 'div.artdeco-entity-lockup__title > a.job-card-container__link'},
                     ":click": 'div.jobs-search-results-list__pagination li.selected + li',
                 },
+                "deep": True
             }
         }
     },
@@ -395,21 +425,22 @@ def find_model(url=None, models=None):
         models = all_models
     if url is None:
         return
-    print(Fore.WHITE + 'find_model()')
+    # print(Fore.WHITE + 'find_model()')
     for model in models:
         if model['website'] in url:
             for regex in model['RegexUrl']:
                 if regex in url:
                     print(Fore.GREEN + 'model founded')
-                    print(Style.RESET_ALL)
+                    # pprint(model)
+                    print(Fore.WHITE)
                     return model
                 else:
                     pass
         else:
             pass
-    print(url)
+    # print(url)
     print(Fore.RED + 'Aucun modèle')
-    print(Style.RESET_ALL)
+    print(Fore.WHITE)
     return {
         "message": 'No model found',
         "sequence": {}

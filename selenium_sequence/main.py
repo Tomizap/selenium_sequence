@@ -4,6 +4,8 @@ from pprint import pprint
 from colorama import Fore, Style
 from selenium_driver import SeleniumDriver
 
+from selenium_sequence.finder import Finder
+
 from .models import find_model
 # from .finder import Finder
 from .data import get_element_data, get_elements_data
@@ -43,9 +45,10 @@ class Sequence:
         return
 
     def play(self) -> None:
-
+        print('play')
+        # time.sleep(1)
         for step in self.sequence:
-
+            
             value = self.sequence[step]
             step_property = str(step).split(':')[0]
             print(Fore.WHITE + '- step: ' + str(step))
@@ -59,7 +62,6 @@ class Sequence:
                 elif type(value) == list:
                     for e in value:
                         self.driver.click(e)
-                continue
 
             elif ":execute_script" in step:
                 if type(value) == str:
@@ -70,7 +72,6 @@ class Sequence:
 
             elif ":wait" in step:
                 time.sleep(value)
-                continue
 
             elif ":goto" in step:
                 if ":original_url" in value:
@@ -94,16 +95,15 @@ class Sequence:
                     if url.strip() != "" and url is not None:
                         # print(url)
                         self.driver.get(url.strip())
-                        time.sleep(3)
+                        # time.sleep(3)
                         if '404' in self.driver.current_url() or 'unavailable' in self.driver.current_url():
                             print(Fore.RED, 'error')
                             print(Style.RESET_ALL)
                             self.driver.get(
                                 "/".join(self.driver.current_url().split('/')[:3]))
-                            time.sleep(3)
+                            # time.sleep(3)
                             self.driver.get(url.strip())
-                            time.sleep(3)
-                continue
+                            # time.sleep(3)
 
             elif ':sequence' in step:
                 seq = Sequence(
@@ -116,6 +116,8 @@ class Sequence:
             # ---------------- SCRAPPING ---------------------
 
             elif ':loop' in step:
+                print(':loop')
+                time.sleep(1)
                 listing = []
                 page_number = 0
                 if type(value['pagination']) == int:
@@ -136,42 +138,48 @@ class Sequence:
                         Fore.GREEN + f"+{len(lseq.data)} url{'s' if len(lseq.data) > 1 else ''} (page {i_page_number} / {page_number})")
                 print(Fore.GREEN + str(len(listing)) + " urls founded")
                 print(Style.RESET_ALL)
+                if value['deep'] is False:
+                    self.data = listing
+                    continue
                 for e in range(len(listing)):
-                    time.sleep(3)
+                    # time.sleep(3)
                     if type(listing[e]) == str:
                         # print('link_loop' + str(listing[e]))
-                        sequence_loop = Sequence(driver=self.driver, url=listing[e], data=[], item={
-                            "URL": self.driver.current_url()
-                        }, sequence=find_model(listing[e])['sequence'])
+                        try:
+                            sequence_loop = Sequence(driver=self.driver, url=listing[e], data=[], item={
+                                "URL": self.driver.current_url()
+                            }, sequence=find_model(listing[e])['sequence'])
+                        except:
+                            continue
+                    
                         sequence_loop.play()
                         items_loop = sequence_loop.data
                         # items_loop['URL'] = driver.current_url()
                         pprint(items_loop[0])
-                        try:
-                            add_data_to_csv(items_loop, "D:/PythonPackages/selenium_scrapper/data/", self.filename)
-                        except:
-                            pass
+                        add_data_to_csv(items_loop, "D:/python/packages/selenium_scrapper/data/", self.filename)
+                        # try:
+                        #     add_data_to_csv(items_loop, "D:/PythonPackages/selenium_scrapper/data/", self.filename)
+                        # except Exception as e:
+                        #     print(str(e))
+                        #     pass
                         if len(items_loop) == 1:
                             self.data.append(items_loop[0].copy())
                         elif len(items_loop) > 1:
                             self.data.extend(items_loop)
                     print(Fore.GREEN + f"+1 item ({e + 1}/{len(listing)})")
+                
 
             elif ":find" in step:
-                # continue
                 result = ''
-                #     finder = Finder(
-                #         name=get_element_data(driver=driver, selector=value['name']),
-                #         title=get_element_data(driver=driver, selector=value['title']),
-                #         location=get_element_data(driver=driver, selector=value['location']))
-                #     if ":email" in step:
-                #         result = str(finder.email())
-                #         print(Fore.WHITE + result)
-                #     elif ":phone" in step:
-                #         result = str(finder.phone())
-                #         print(Fore.WHITE + result)
-                self.item[value['property']] = result
-                continue
+                if ":email" in step:
+                    finder = Finder(driver=self.driver)
+                    result = str(finder.email())
+                    # print(Fore.WHITE + result)
+                elif ":phone" in step:
+                    finder = Finder(driver=self.driver)
+                    result = str(finder.phone())
+                    # print(Fore.WHITE + result)
+                self.item[step_property if step_property != "" else value['property']] = result
 
             elif ':get' in step:
                 if step_property == "":
@@ -185,6 +193,8 @@ class Sequence:
                                 driver=self.driver,
                                 selector=value['selector'],
                                 prop=value['property'])
+                            print(v)
+                            
                         self.data.extend(v.copy())
                         continue
                     else:
@@ -200,7 +210,6 @@ class Sequence:
                             prop=value['property'])
                     else:
                         print(Fore.RED + 'Nothing to get')
-                    continue
 
             print(Style.RESET_ALL)
 

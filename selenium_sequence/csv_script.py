@@ -23,6 +23,7 @@ def add_data_to_csv(data, directory, filename=None):
 
     # Check if the file exists
     file_exists = os.path.isfile(file_path)
+    print('file_exists: ' + str(file_exists))
 
     # Extracting fieldnames from the first dictionary in the data list
     fieldnames = list(data[0].keys())
@@ -42,6 +43,7 @@ def add_data_to_csv(data, directory, filename=None):
 
     # Append or create the file
     mode = 'a' if file_exists else 'w'
+    print('mode: ' + str(file_exists))
     with open(file_path, mode, newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
 
