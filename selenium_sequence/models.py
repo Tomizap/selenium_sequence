@@ -99,6 +99,8 @@ all_models = [
         "website": "lannuaire.service-public.fr",
         "type": "company",
         "require_auth": False,
+        "authSequence": {},
+        "action": "scrapping",
         "RegexUrl": ["/navigation/ile-de-france/mairie"],
         "sequence": {
             ":loop": {
@@ -115,6 +117,8 @@ all_models = [
         "website": "lannuaire.service-public.fr",
         "type": "company",
         "require_auth": False,
+        "authSequence": {},
+        "action": "scrapping",
         "RegexUrl": ["/ile-de-france/"],
         "sequence": {
             "NAME:get": 'h1[itemprop="name"]',
@@ -127,21 +131,23 @@ all_models = [
         }
     },
     # --- google.com ---
-    {
-        "website": "google.com",
-        "type": "company",
-        "RegexUrl": ["/maps/search"],
-        "sequence": {
-            ":googlemaps": {
+    # {
+    #     "website": "google.com",
+    #     "type": "company",
+    #     "RegexUrl": ["/maps/search"],
+    #     "sequence": {
+    #         ":googlemaps": {
 
-            }
-        }
-    },
+    #         }
+    #     }
+    # },
     # --- 123ecoles.com ---
     {
         "website": "123ecoles.com",
         "type": "school",
         "require_auth": True,
+        "authSequence": {},
+        "action": "scrapping",
         "RegexUrl": ["/etablissements-scolaires-"],
         "sequence": {
             ":loop": {
@@ -157,6 +163,8 @@ all_models = [
         "website": "123ecoles.com",
         "type": "school",
         "require_auth": True,
+        "authSequence": {},
+        "action": "scrapping",
         "RegexUrl": ["/"],
         "sequence": {
             f"COMPANY:get": "body > div.main-wrap > div.main.ts-contain.cf.right-sidebar > div > div > div.the-post-header.s-head-modern.s-head-modern-a.has-share-meta-right > div > h1",
@@ -171,6 +179,8 @@ all_models = [
         "website": "pagesjaunes.fr",
         "type": "company",
         "require_auth": False,
+        "authSequence": {},
+        "action": "scrapping",
         "RegexUrl": ["/"],
         "sequence": {}
     },
@@ -178,6 +188,8 @@ all_models = [
         "website": "pagesjaunes.fr",
         "type": "company",
         "require_auth": False,
+        "authSequence": {},
+        "action": "scrapping",
         "RegexUrl": ["/"],
         "sequence": {}
     },
@@ -187,6 +199,8 @@ all_models = [
         "website": "linkedin.com",
         "type": "jobs",
         "require_auth": True,
+        "authSequence": {},
+        "action": "scrapping",        
         "RegexUrl": ["/jobs/search"],
         "sequence": {
             ":loop": {
@@ -206,6 +220,8 @@ all_models = [
         "website": "linkedin.com",
         "type": "job",
         "require_auth": True,
+        "authSequence": {},
+        "action": "scrapping",
         "RegexUrl": ["/jobs/view"],
         "sequence": {
             # JOB
@@ -234,6 +250,8 @@ all_models = [
         "website": "linkedin.com",
         "type": "companies",
         "require_auth": True,
+        "authSequence": {},
+        "action": "scrapping",
         "RegexUrl": ["/search/results/companies"],
         "sequence": {
             ":loop": {
@@ -250,6 +268,8 @@ all_models = [
         "website": "linkedin.com",
         "type": "company",
         "require_auth": True,
+        "authSequence": {},
+        "action": "scrapping", 
         "RegexUrl": ["/company/"],
         "sequence": sequences['linkedin']['COMPANY']
     },
@@ -257,6 +277,8 @@ all_models = [
         "website": "linkedin.com",
         "type": "school",
         "require_auth": True,
+        "authSequence": {},
+        "action": "scrapping", 
         "RegexUrl": ["/school/"],
         "sequence": sequences['linkedin']['COMPANY']
     },
@@ -265,6 +287,8 @@ all_models = [
         "website": "linkedin.com",
         "type": "peoples",
         "require_auth": True,
+        "authSequence": {},
+        "action": "scrapping", 
         "RegexUrl": ["/search/results/people"],
         "sequence": {
             ":loop": {
@@ -281,6 +305,8 @@ all_models = [
         "website": "linkedin.com",
         "type": "people",
         "require_auth": True,
+        "authSequence": {},
+        "action": "scrapping", 
         "RegexUrl": ["/in/"],
         "sequence": sequences['linkedin']['PEOPLE']
     },
@@ -289,7 +315,9 @@ all_models = [
         "website": "indeed.com",
         "type": "jobs",
         "require_auth": True,
-        "RegexUrl": ["/jobs", "/emplois", ""],
+        "authSequence": {},
+        "action": "scrapping", 
+        "RegexUrl": ["/jobs", "/emplois"],
         "sequence": {
             ":loop": {
                 "pagination": 1,
@@ -299,6 +327,7 @@ all_models = [
                     f":click_1": "#mosaic-modal-mosaic-provider-desktopserp-jobalert-popup > div > div > div.icl-Modal > div > button",
                     f":click_2": 'nav[role="navigation"] > div:last-child > a',
                 },
+                "deep": True
             }
         }
     },
@@ -306,7 +335,9 @@ all_models = [
         "website": "indeed.com",
         "type": "job",
         "require_auth": True,
-        "RegexUrl": ["/viewjob", '/job/'],
+        "authSequence": {},
+        "action": "scrapping", 
+        "RegexUrl": ["/viewjob", '/job/', "pagead/clk"],
         "sequence": {
             "JOB_TITLE:get": "h1 > span",
             "JOB_LOCATION:get": ".css-6z8o9s > div",
@@ -316,14 +347,25 @@ all_models = [
             "JOB_ADVANTAGE:get": "#benefits > div",
             "JOB_WORKTIME:get": "#jobDetailsSection > div:last-child > div:last-child",
             # COMPANY
+            ":goto": '[data-testid="inlineHeader-companyName"] a',
+            ":sequence": sequences['indeed']['COMPANY'],
+            f":goto_432": ":original_url",
+            "COMPANY_NAME:get": '[data-testid="inlineHeader-companyName"] a',
+            "COMPANY_PHONE:find:phone": {
+                "name": '[data-testid="inlineHeader-companyName"] a',
+                "location": ".css-6z8o9s > div"
+            },
+            f":goto_534r": ":original_url",
+            "COMPANY_EMAIL:find:email": {
+                "name": '[data-testid="inlineHeader-companyName"] a',
+                "location": ".css-6z8o9s > div"
+            },
+            f":goto_67hj": ":original_url",
             "COMPANY_LOCATION:get": ".css-6z8o9s > div",
             "COMPANY_PAGE:get": {
-                "selector": ".jobsearch-CompanyInfoContainer a",
+                "selector": '[data-testid="inlineHeader-companyName"] a',
                 "property": "href"
             },
-            ":goto": '.jobsearch-CompanyInfoContainer a',
-            ":sequence": sequences['indeed']['COMPANY'],
-            # f":goto_{rand()}": ":original_url",
             # ":execute_script": "history.back();",
             # ":wait": 2,
         }
@@ -332,6 +374,8 @@ all_models = [
         "website": "indeed.com",
         "type": "company",
         "require_auth": True,
+        "authSequence": {},
+        "action": "scrapping",        
         "RegexUrl": ["/cmp/"],
         "sequence": {
             "COMPANY_NAME:get": 'header > h2',
@@ -361,6 +405,8 @@ all_models = [
         "website": "pole-emploi.com",
         "type": "jobs",
         "require_auth": True,
+        "authSequence": {},
+        "action": "scrapping",
         "RegexUrl": ["/offres/recherche"],
         "sequence": {
             ":loop": {
@@ -381,6 +427,8 @@ all_models = [
         "website": "pole-emploi.com",
         "type": "job",
         "require_auth": True,
+        "authSequence": {},
+        "action": "scrapping",
         "RegexUrl": ["/offres/recherche/detail/"],
         "sequence": {
             "JOB_NAME:get": "#labelPopinDetailsOffre > span:last-child",
@@ -404,6 +452,8 @@ all_models = [
         "website": "pole-emploi.com",
         "type": "company",
         "require_auth": True,
+        "authSequence": {},
+        "action": "scrapping",
         "RegexUrl": ["/page-entreprise"],
         "sequence": {
             "COMPANY_NAME:get": "h1",
@@ -420,14 +470,16 @@ all_models = [
 ]
 
 
-def find_model(url=None, models=None):
-    if models is None:
-        models = all_models
+def find_model(url=None, action=None):
+    models = all_models
+    if action is None:
+        action = 'scrapping'
+
     if url is None:
         return
     # print(Fore.WHITE + 'find_model()')
     for model in models:
-        if model['website'] in url:
+        if model['website'] in url and model['action'] == "scrapping":
             for regex in model['RegexUrl']:
                 if regex in url:
                     print(Fore.GREEN + 'model founded')

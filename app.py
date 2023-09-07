@@ -13,26 +13,35 @@ def options_sequence():
     return find_model(url=url)
 
 
-@app.route('/sequence', methods=['POST'])
+
+@app.route('/sequence/play', methods=['POST'])
 def play_sequence():
     url = request.json.get('url')
-    user = request.json.get('user')
-    cookies = user['cookies']
-    # Create driver for this request
-    driver = SeleniumDriver()
-    # Go to url
-    driver.get(url)
-    # Add cookies to driver
-    for cookie in cookies:
-        cookie = {'name': cookie['name'], 'value': cookie['value']}
-        driver.add_cookie(cookie)
-    # Init Sequence
-    sequence = Sequence(url=url, driver=driver)
-    # play Sequence
+    auth = request.json.get('auth')
+        
+    sequence = Sequence(url=url, auth=auth)
     sequence.play()
-    # get data from Sequence
+
     data = sequence.data
     return data
+
+
+@app.route('/sequence/autoapply', methods=['POST'])
+def play_sequence():
+    url = request.json.get('url')
+    auth = request.json.get('auth')
+        
+    sequence = Sequence(url=url, auth=auth)
+    sequence.play()
+
+    data = sequence.data
+    return data
+
+
+# @app.route('/scrapper', methods=['OPTIONS'])
+# def options_sequence():
+#     url = request.json.get('url')
+#     return find_model(url=url)
 
 
 if __name__ == '__main__':
