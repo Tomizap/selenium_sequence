@@ -1,7 +1,7 @@
 import time
 import re
 
-from colorama import Fore
+from colorama import Fore, Style
 import requests
 from selenium.webdriver.common.keys import Keys
 from selenium_driver import SeleniumDriver
@@ -10,15 +10,22 @@ from selenium_driver import SeleniumDriver
 class Finder:
     def __init__(self, driver=None, name=None, location=None) -> None:
         print(Fore.WHITE + 'Finder')
-        self.driver = driver if driver is not None else SeleniumDriver()
+
+        self.driver = SeleniumDriver()
         self.name = name if name is not None else ""
         self.location = location if location is not None else ""
-        # self.google_query = f'{self.name} "@" "contact"'
+
+    def clear_phone(self, phone):
+        phone = str(phone)
+        if "'" in phone:
+            phone = phone.split("'")[1]
+        phone = phone.replace(r'[\s\.\-]', '')
+        return phone
 
     # -------------- GLOBAL -------------------
 
     def email(self) -> str:
-        if self.location is None or self.name is None:
+        if self.location is None or self.location == "" or self.name is None or self.name == '':
             return ''
         # print('email')
         regex_exp = r'[\w.+-]+@[\w-]+\.[\w.-]+'
@@ -28,95 +35,161 @@ class Finder:
             print(Fore.GREEN + f'email found: {regex[0]}')
             return regex[0]
 
-        mail = self.google_search(regex_exp=regex_exp)
+        mail = self.google_search(q=f"{self.name} {self.location} contact email", regex_exp=regex_exp)
         if mail != '':
-            print(Fore.WHITE + f'email found: {mail}')
+            print(Fore.GREEN + f'email found: {mail}')
             return mail
-        
-        # mail = self.google_api(regex_exp=regex_exp)
-        # if mail != '':
-        #     print(Fore.WHITE + 'email found: ' + mail)
-        #     return mail
 
         print(Fore.RED + 'Unable de get email')
-        print(Fore.WHITE)
+        print(Style.RESET_ALL)
         return ''
 
     def phone(self) -> str:
-        if self.location is None or self.name is None:
+        if self.location is None or self.location == "" or self.name is None or self.name == '':
             return ''
-        # print(Fore.WHITE + 'phone')
         regex_exp = r'((\+33|0)[1-9](?:[\s.-]?[0-9]{2}){4})'
         
         text = self.driver.find_element("body").get_property('innerText')
         regex = re.findall(regex_exp, text)
         if bool(regex):
-            print(Fore.GREEN + 'find phone')
-            print(Fore.WHITE)
-            return regex[0]
+            phone = self.clear_phone(regex[0])
+            print(Fore.GREEN + f'phone found: {phone}')
+            return phone
+            
         
-        phone = self.google_search(regex_exp=regex_exp)
+        phone = self.google_search(q=f"{self.name} {self.location} contact phone", regex_exp=regex_exp)
         if phone != '':
-            print(Fore.WHITE + f'phone found: {phone}')
-            return str(phone).split("'")[1].replace(r'[\s.-]', '')
-
-        # phone = self.pagejaunes(regex_exp=regex_exp)
-        # if phone != '':
-        #     print(Fore.WHITE + 'email found: ' + phone)
-        #     return str(phone).split("'")[1].replace(r'[\s.-]', '')
-
-        # # mail = self.google_api(regex_exp=regex_exp)
-        # # if mail != '':
-        # #     return str(mail).split("'")[1].replace(r'[\s.-]', '')
+            phone = self.clear_phone(phone)
+            print(Fore.GREEN + f'phone found: {phone}')
+            return phone
 
         print(Fore.RED + 'Unable de get phone')
-        print(Fore.WHITE)
+        print(Style.RESET_ALL)
         return ''
-
-    # def website(self) -> str:
-    #     if self.location is None or self.name is None:
-    #         return ''
+    
+    def website(self) -> str:
+        # self.driver.get('')
+        # if self.name is None or self.name == '':
+        #     return ''
+        w = self.google_search(
+            q=f"intext:{self.name}",
+            css_selector='#rso a')
+        if w == "":
+            print(Fore.RED + 'Unable to find google search')
+            print(Style.RESET_ALL)
+        self.w = w
+        return w
+    
+    def indeed(self, regex_url=[
+        "indeed.com/cmp/",
+    ], prefix="") -> str:
+        # if self.name is None or self.name == '':
+        #     return ''
+        url = self.google_search(
+            q=f"{prefix} {self.name} @indeed",
+            # regex_exp=r'indeed\.com\/cmp\/',
+            css_selector='#rso a')
+        for regex in regex_url:
+            if regex in url:
+                return url
+        print(Fore.RED + 'Unable to find indeed')
+        print(Style.RESET_ALL)
+        return ''
         
-    #     # print(Fore.WHITE + 'website')
-    #     regex_exp = r'((\+33|0)[1-9](?:[\s.-]?[0-9]{2}){4})'
+    def linkedin(self, regex_url=[
+        "linkedin.com/company/",
+        "linkedin.com/shool/"
+    ], prefix="") -> str:
+        url = self.google_search(
+            q=f"{prefix} {self.name} @linkedin",
+            # regex_exp=r'linkedin\.com\/company\/',
+            css_selector='#rso a')
+        for regex in regex_url:
+            if regex in url:
+                return url
+        print(Fore.RED + 'Unable to find linkedin')
+        print(Style.RESET_ALL)
+        return ''
+    
+    def facebook(self, regex_url=[
+        "facebook.com/"
+    ], prefix="") -> str: 
+        url = self.google_search(
+            q=f"{prefix} {self.name} @facebook",
+            # regex_exp=r'facebook\.com/',
+            css_selector='#rso a')
+        for regex in regex_url:
+            if regex in url:
+                return url
+        print(Fore.RED + 'Unable to find facebook')
+        print(Style.RESET_ALL)
+        return ''
+    
+    def youtube(self, regex_url=[
+        "youtube.com/@"
+    ], prefix="channel") -> str: 
+        url = self.google_search(
+            q=f"{prefix} {self.name} @facebook",
+            # regex_exp=r'facebook\.com/',
+            css_selector='#rso a')
+        for regex in regex_url:
+            if regex in url:
+                return url
+        print(Fore.RED + 'Unable to find youtube')
+        print(Style.RESET_ALL)
+        return ''
+    
+    def instagram(self, regex_url=[
+        r"instagram.com\/[\w.]+\/\?hl="
+    ], prefix="channel") -> str: 
+        url = self.google_search(
+            q=f"{prefix} {self.name} @facebook",
+            # regex_exp=r'facebook\.com/',
+            css_selector='#rso a')
+        for regex in regex_url:
+            if regex in url or bool(re.search(regex, url)):
+                return url
+        print(Fore.RED + 'Unable to find instagram')
+        print(Style.RESET_ALL)
+        return ''
         
-    #     text = self.driver.find_element("body").get_property('innerText')
-    #     regex = re.findall(regex_exp, text)
-    #     if bool(regex):
-    #         print(Fore.GREEN + 'find website')
-    #         print(Fore.WHITE)
-    #         return regex[0]
-        
-    #     website = self.google_search(regex_exp=regex_exp)
-    #     if website != '':
-    #         print(Fore.WHITE + f'website found: {website}')
-    #         return str(website).split("'")[1].replace(r'[\s.-]', '')
-
-    #     print(Fore.RED + 'Unable de get website')
-    #     print(Fore.WHITE)
+    # def linkedin(self) -> str:
     #     return ''
+        
+    # def account_instagram(self) -> str:
+    #     url = self.google_search(
+    #         q=f"{self.name} @instagram",
+    #         # regex_exp=r'facebook\.com/',
+    #         css_selector='#rso a')
+    #     return url if "instagram.com/" in url else ""
 
     # -------------- EXTERNAL -------------------
 
-    def google_search(self, regex_exp=None) -> str:
-        if self.location is None or self.name is None:
+    def google_search(self, q="", regex_exp=None, css_selector=None) -> str:
+        if self.name is None or self.name == '':
             return ''
         print(Fore.WHITE + 'google_search')
 
-        self.driver.get(
-            f'https://www.google.com/search?q={self.name} {self.location} contact')
-        time.sleep(2)
+        self.driver.get(f'https://www.google.com/search?q={q}')
+        # time.sleep(2)
 
-        reg = re.findall(regex_exp, self.driver.find_element(
-            'body').get_property('innerText'))
-        if bool(reg) is True:
-            # driver.close()
-            return reg[0]
+        if regex_exp is not None:
+            reg = re.findall(regex_exp, self.driver.find_element(
+                'body').get_property('innerText'))
+            if bool(reg) is True:
+                # driver.close()
+                return reg[0]
+            
+        if css_selector is not None:
+            try:
+                element = self.driver.find_element(css_selector)
+                return element.get_property('href')
+            except:
+                pass
         
         print(Fore.RED + 'Unable to find google search')
-        print(Fore.WHITE)
+        print(Style.RESET_ALL)
         return ''
-
 
 
 # finder = Finder(name='luminess', location="paris")

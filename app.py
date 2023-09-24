@@ -1,3 +1,4 @@
+import threading
 import time
 
 from flask import Flask, request
@@ -16,14 +17,30 @@ def options_sequence():
 
 @app.route('/sequence/play', methods=['POST'])
 def play_sequence():
-    url = request.json.get('url')
-    auth = request.json.get('auth')
-        
-    sequence = Sequence(url=url, auth=auth)
-    sequence.play()
+    _id = request.json.get('_id')
 
-    data = sequence.data
-    return data
+    urls = request.json.get('urls')
+    # auth = request.json.get('auth')
+
+    # data = []
+    threads = []
+        
+    for url in urls:
+        s = Sequence(
+            url=url, 
+            auth=request.json.get('auth'), 
+            filename=None)
+        thread = threading.Thread(target=s.play)
+        threads.append(thread)
+        thread.start()
+
+    for thread in threads:
+        thread.join()
+
+    return {
+        "ok": True,
+        "data": []
+    }
 
 
 @app.route('/sequence/autoapply', methods=['POST'])

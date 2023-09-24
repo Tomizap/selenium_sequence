@@ -1,81 +1,174 @@
+import re
 import time
 from pprint import pprint
 
 from colorama import Fore, Style
 from selenium_driver import SeleniumDriver
+from tzmongo import mongo
 
 from selenium_sequence.finder import Finder
 
 from .models import find_model
 from .data import get_element_data, get_elements_data
 from .chrono import Chronos
-# from .csv_script import add_data_to_csv
+from .csv_script import add_data_to_csv
+from .json_script import add_data_to_json
+from .items import *
+from .tzprint import *
 
 
 class Sequence:
 
-    def __init__(self, driver=None, url=None, item=None, data=None, sequence=None, auth=None) -> None:
+    def __init__(
+            self, 
+            driver=None, 
+            url=None, 
+            item=None, 
+            data=[], 
+            sequence=None,
+            depth=0,
+            # step={}, 
+            auth=None, 
+            headless=False,
+            sequenceid=None,
+            filename=None) -> None:
 
         self.chrono = Chronos()
         self.chrono.start()
 
-        if data is None:
-            data = []
+        self.depth = depth
+        tzprint(f'init Sequence (depth: {self.depth})', self.depth)
+
         self.data = data
-
-        if item is None:
-            item = {}
-        self.item = item
-
         if driver is None:
-            driver = SeleniumDriver()
-        self.driver = driver
+            self.driver = SeleniumDriver(headless=headless)
+        else:
+            self.driver = driver
 
         if url is not None:
             self.driver.get(url)
-        self.original_url = self.driver.current_url()
+        
+        self.model = {}
 
-        if type(auth) is list:
-            for cookie in auth:
-                cookie = {'name': cookie.get('name'), 'value': cookie.get('value')}
-                self.driver.add_cookie(cookie)
-            self.driver.get(url)
-        elif type(auth) is str:
-            if auth == 'indeed.com':
-                pass
-            if auth == 'pole-emploi.com':
-                pass
-
-        self.filename = None
-
-        self.model = find_model(self.original_url)
+        if sequence is None:
+            print('no sequence provided')
+            self.model = find_model(url if url is not None else self.driver.current_url())
+            sequence = self.model['sequence']
+        else:
+            print('sequence provided')
         self.sequence = sequence
-        if self.sequence is None:
-            self.sequence = self.model['sequence']
 
-        return
+        if self.model.get('require_auth') is True:
+            print('require_auth')
+            if type(auth) is list:
+                for cookie in auth:
+                    cookie = {'name': cookie.get('name'), 'value': cookie.get('value')}
+                    self.driver.add_cookie(cookie)
+                self.driver.get(url)
+                self.model = find_model(url)
+                self.sequence = self.model['sequence']
 
-    def update_sequence(self):
+        self.original_url = self.driver.current_url()
+        self.model = find_model(self.driver.current_url())
+        # self.sequence = self.model['sequence']
+
+        self.website = self.model.get('website')
+        
+        self.item = item if item is not None else self.model['fields']()
+
+        self.filename = filename
+
+        self.automnation = {}
+        # if sequenceid is not None:
+        #     self.automnation = mongo({
+        #         "db": 'tools',
+        #         "collection": "automnations",
+        #         "selector": {'_id': sequenceid}
+        #     })
+        #     self.mongo_selector = {
+        #         'db': 'tools',
+        #         "collection": "automnations",
+        #     }
+
+    def add_item(self, item={}):
+        self.data.extend(item)
+
+        if self.filename is not None:
+            add_data_to_csv(data=[item], filename=self.filename)
+            add_data_to_json(data=[item], filename=self.filename)
+
+        if self.automnation.get('_id') is not None:
+            edit = self.update_automnation({
+                "$push": {
+                    'data': item
+                }
+            })
+            if edit is True:
+                print(Fore.GREEN + 'item added to storage')
+                print(Style.RESET_ALL)
+        
+    # def update_data(self):
+    #     mongo()
+    #     pass
+
+    def update_item(self, name, value):
+        self.item.__setattr__(name, value)
+
+    # AUTOMNATION INTERACTION                
+    
+    def update_automnation(self, updator):
+        # return mongo({
+        #     "db": 'storage',
+        #     "collection": "tables",
+        #     "action": "edit",
+        #     "selector": {"_id": self.automnation.get('_id')},
+        #     "updator": updator
+        # })
+        pass
+    
+    def pause_automnation(self):
+        # return mongo({
+        #     "db": 'storage',
+        #     "collection": "tables",
+        #     "action": "edit",
+        #     "selector": {"_id": self.automnation.get('_id')},
+        #     "updator": {
+        #         'active': False,
+        #         'status': 'pause',
+        #         "message": 'Automnation in pause ...'
+        #     }
+        # })
         pass
 
     def play(self) -> None:
-        # print('play')
-        # time.sleep(1)
+        tzprint('play', self.depth)
+        # time.sleep(2)
+
+        # mongo({
+        #     "db": 'storage',
+        #     "collection": "tables",
+        #     "action": "edit",
+        #     "selector": {"_id": self.automnation.get('_id')},
+        #     "updator": {
+        #         'active': True,
+        #         'status': 'active',
+        #     }
+        # })
+
         for step in self.sequence:
             
+            tzprint(Fore.WHITE + 'step: ' + str(step), self.depth)
             value = self.sequence[step]
-            step_property = str(step).split(':')[0]
-            print(Fore.WHITE + '- step: ' + str(step))
 
             # ---------------- ACTION ---------------------
 
             if ':click' in step:
-                # print(value)
                 if type(value) == str:
                     self.driver.click(value)
                 elif type(value) == list:
                     for e in value:
                         self.driver.click(e)
+                continue
 
             elif ":execute_script" in step:
                 if type(value) == str:
@@ -83,140 +176,217 @@ class Sequence:
                 elif type(value) == list:
                     for script in value:
                         self.driver.execute_script(script)
+                continue
 
             elif ":wait" in step:
                 time.sleep(value)
+                continue
 
             elif ":goto" in step:
+
                 if ":original_url" in value:
-                    print(Fore.WHITE + 'go back to original_url')
+                    # tzprint(Fore.WHITE + 'go back to original_url', self.depth)
                     self.driver.get(self.original_url)
-                else:
-                    url = ""
-                    if type(value) == str:
-                        if "http" in value:
-                            url = value
-                        else:
-                            url = get_element_data(
-                                driver=self.driver,
-                                selector=value, prop="href")
-                    elif type(value) == dict:
+                    continue
+
+                url = ""
+
+                if type(value) == str:
+                    if "http" in value:
+                        url = value
+                    else:
                         url = get_element_data(
                             driver=self.driver,
-                            selector=value['selector'],
-                            prop=value['property'])
-                    # print(url)
-                    if url.strip() != "" and url is not None:
-                        # print(url)
+                            selector=value, prop="href")
+                        
+                elif type(value) == dict:
+                    url = get_element_data(
+                        driver=self.driver,
+                        selector=value['selector'],
+                        prop=value['property'])
+                    
+                if url.strip() != "" and url is not None:
+                    self.driver.get(url.strip())
+                    if '404' in self.driver.current_url() or 'unavailable' in self.driver.current_url():
+                        tzprint(Fore.RED + 'error', self.depth)
+                        print(Style.RESET_ALL)
+                        self.driver.get(
+                            "/".join(self.driver.current_url().split('/')[:3]))
                         self.driver.get(url.strip())
-                        # time.sleep(3)
-                        if '404' in self.driver.current_url() or 'unavailable' in self.driver.current_url():
-                            print(Fore.RED, 'error')
-                            print(Style.RESET_ALL)
-                            self.driver.get(
-                                "/".join(self.driver.current_url().split('/')[:3]))
-                            # time.sleep(3)
-                            self.driver.get(url.strip())
-                            # time.sleep(3)
+
+                continue
 
             elif ':sequence' in step:
                 seq = Sequence(
-                    driver=self.driver, item={}, data=[], sequence=value)
+                    driver=self.driver, 
+                    item=self.item, 
+                    data=[], 
+                    sequence=value,
+                    depth= self.depth + 1)
                 seq.play()
                 if len(seq.data) == 1:
                     for prop in seq.data[0]:
-                        self.item[prop] = seq.data[0][prop]
-
-            # ---------------- SCRAPPING ---------------------
-
-            elif ':loop' in step:
+                        if self.item.get(prop) is not None:
+                            self.item[prop] = seq.data[0][prop]
+                continue
                 
-                time.sleep(1)
+
+            # ---------------- LOOPING ---------------------
+
+            if ':loop' in step:
+                
                 listing = []
-                page_number = 0
+                i_loop = 0
+                pagination = value.get('pagination')
 
-                if type(value['pagination']) == int:
-                    page_number = value['pagination']
-                elif type(value['pagination']) == str:
-                    try:
-                        page_number = int(get_element_data(driver=self.driver, selector=value['pagination']))
-                    except:
-                        page_number = 40
+                page = 99
+                if type(value.get('page')) is str:
+                    page = int(get_element_data(self.driver, value.get('page')))
+                elif type(value.get('page')) is int:
+                    page = value.get('page')
+                print(f"page: {page}")
 
-                for i_page_number in range(page_number):
+                if not self.driver.is_attached(str(pagination)):
+                    print('pagination is not attached')
+                    for _ in range(5):
+                        if not self.driver.is_attached(str(pagination)):
+                            time.sleep(1)
+
+                while i_loop < page and self.driver.is_attached(str(pagination)):
+                    i_loop = i_loop + 1
+
+                    tzprint(f'page: {i_loop}/{page}')
+                    if not self.driver.is_attached(str(pagination)):
+                        print('pagination is not attached')
+                        for _ in range(5):
+                            if not self.driver.is_attached(str(pagination)):
+                                time.sleep(1)
+                    
                     listing_sequence = Sequence(
+                        item=self.item,
                         driver=self.driver,
                         sequence=value['listing'],
-                        data=[])
+                        data=[],
+                        depth=self.depth + 1)
                     listing_sequence.play()
-                    listing.extend(listing_sequence.data.copy())
-                    # print(
-                    #     Fore.GREEN + f"+{len(lseq.data)} url{'s' if len(lseq.data) > 1 else ''} (page {i_page_number} / {page_number})")
-                print(Fore.GREEN + str(len(listing)) + " urls founded")
+
+                    if value.get('replace') == True:
+                        listing = listing_sequence.data
+                    else:
+                        listing.extend(listing_sequence.data.copy())
+                    
+                    self.driver.click(value['pagination'])
+
+                    tzprint(Fore.GREEN + f'+{len(listing_sequence.data)} urls to scrap', self.depth)
+                    tzprint(Fore.WHITE + f'TOTAL: {len(listing)}', self.depth)
+
+                tzprint(Fore.GREEN + f"listing ended: {str(len(listing))} urls founded", self.depth)
                 print(Style.RESET_ALL)
 
-                for i in range(len(listing)):
-                    listing[i] = str(listing[i]).split('?')[0]
+                # for i in range(len(listing)):
+                #     listing[i] = str(listing[i]).split('?')[0]
                     
                 if value.get('deep') is False:
                     self.data = listing
                     continue
 
-                # print(listing)
+                for u in range(len(listing)):
+                    url = listing[u]
 
-                for e in range(len(listing)):
-                    # time.sleep(3)
-                    if type(listing[e]) == str:
-                        # print('link_loop' + str(listing[e]))
-                        try:
-                            sequence_loop = Sequence(driver=self.driver, url=listing[e], data=[], item={
-                                "URL": self.driver.current_url()
-                            }, sequence=find_model(listing[e])['sequence'])
-                        except:
-                            continue
-                    
-                        sequence_loop.play()
-                        items_loop = sequence_loop.data
-                        # items_loop['URL'] = driver.current_url()
-                        pprint(items_loop[0])
-                        # add_data_to_csv(items_loop, "D:/python/packages/selenium_scrapper/data/", self.filename)
-                        # try:
-                        #     add_data_to_csv(items_loop, "D:/PythonPackages/selenium_scrapper/data/", self.filename)
-                        # except Exception as e:
-                        #     print(str(e))
-                        #     pass
-                        if len(items_loop) == 1:
-                            self.data.append(items_loop[0].copy())
-                        elif len(items_loop) > 1:
-                            self.data.extend(items_loop)
-                    print(Fore.GREEN + f"+1 item ({e + 1}/{len(listing)})")
+                    if type(url) == str:
+
+                        self.driver.get(url)
+                        time.sleep(1)
+                        url = self.driver.current_url()
+                        for attr in self.item.__dict__:
+                            self.update_item(attr, "")
+                            
+                        # self.update_item(, "")
+                        model = find_model(url=url)
+                        loop_sequence = Sequence(
+                            driver=self.driver, 
+                            # url=url,
+                            # data=[], 
+                            # item=Item(fields={
+                            #     self.item.__dict__.get(self.model.get('type'), '') + "_URL": url
+                            # }), # type: ignore
+                            sequence=model.get('sequence'),
+                            depth=self.depth + 1)
+                        loop_sequence.play()
+
+                        model = loop_sequence.model
+                        # datatype = str(model.get('type'), '')
+                        loop_sequence.update_item(model.get('type', '') + "_URL", url)
+                        item = loop_sequence.item.__dict__
+                        # item.__setattribute__()
+                        pprint(item)
+
+                        self.add_item(item)
+
+                        # if len(items_loop) == 1:
+                        #     self.data.append(items_loop[0].copy())
+                        # elif len(items_loop) > 1:
+                        #     self.data.extend(items_loop)
+                    tzprint(Fore.GREEN + f"+1 item scrapped ({u + 1}/{len(listing)})", self.depth)
+                    print(Style.RESET_ALL)
+                continue
                 
+            # ---------------- GET DATA ---------------------
 
-            elif ":find" in step:
+            step_property = str(step).split(':')[0]
+
+            if step_property != '':
+                if self.item.get(step_property) is None:
+                    tzprint(Fore.RED + f'{step_property} is an incorrect attribute', self.depth)
+                    continue
+                elif self.item.get(step_property) != '':
+                    print(Fore.RED + f'property {step_property} is already set')
+                    continue
+
+            if ":find" in step:
                 result = ''
-                # print('--------')
-                # print(value)
-                # print(type(value))
-                # print(value.get('name'))
-                # print(value[0])
-                # print(value[0][1])
+
                 if type(value) == dict:
-                    name = get_element_data(driver=self.driver, selector=value.get('name'))
-                    location = get_element_data(driver=self.driver, selector=value.get('location'))
+
+                    name = self.item.get('COMPANY_NAME')
+                    if value.get('name') is not None:
+                        name = get_element_data(driver=self.driver, selector=value.get('name'))
+                    # print(name)
+
+                    location = self.item.get('COMPANY_LOCATION')
+                    if value.get('location') is not None:
+                        location = get_element_data(driver=self.driver, selector=value.get('location'))
+                    # print(location)
+
                     finder = Finder(
                         driver=self.driver,
                         name=name,
                         location=location,
                     )
+
                     if ":email" in step:
                         result = str(finder.email())
                     elif ":phone" in step:
                         result = str(finder.phone())
-                        # print(Fore.WHITE + result)
-                self.item[step_property if step_property != "" else value['property']] = result
-                # print('--------')
+                    elif ':website' in step:
+                        result = str(finder.website())
+                    elif ':linkedin' in step:
+                        result = str(finder.linkedin())
+                    elif ':indeed' in step:
+                        result = str(finder.indeed())
+                    elif ':facebook' in step:
+                        result = str(finder.facebook())
+                    elif ':facebook' in step:
+                        result = str(finder.youtube())
+                    else:
+                        continue
+
+                    self.update_item(step_property, result)
+
+                self.driver.get(self.original_url)
 
             elif ':get' in step:
+
                 if step_property == "":
                     if ":all" in step:
                         v = {}
@@ -228,29 +398,55 @@ class Sequence:
                                 driver=self.driver,
                                 selector=value['selector'],
                                 prop=value['property'])
-                            # print(v)
                             
                         self.data.extend(v.copy())
                         continue
                     else:
-                        print(Fore.RED + 'Nothing to get all')
+                        tzprint(Fore.RED + 'Nothing to get all', self.depth)
+
                 else:
+
+                    if ":current_url" in step:
+                        self.update_item(
+                            step_property, 
+                            self.driver.current_url())
+                        continue
+
                     if type(value) == str:
-                        self.item[step_property] = get_element_data(
-                            driver=self.driver, selector=value, prop="innerText")
-                    elif type(value) == dict:
-                        self.item[step_property] = get_element_data(
+                        self.update_item(
+                            step_property, 
+                            get_element_data(driver=self.driver, selector=value, prop="innerText"))
+                        
+                    elif type(value) == dict or value.get('selector') is not None:
+                        self.update_item(step_property, get_element_data(
                             driver=self.driver,
-                            selector=value['selector'],
-                            prop=value['property'])
+                            selector=value.get('selector'),
+                            prop=value.get('property') if value.get('property') is not None else 'innerText'))
+                        if value.get('replace') == str:
+                            self.update_item(
+                                step_property, 
+                                re.sub(value.get('replace'), '', self.item.__getattribute__(step_property)))
+                        # print(Fore.GREEN + self.item.__getattribute__(step_property))
                     else:
                         print(Fore.RED + 'Nothing to get')
 
             print(Style.RESET_ALL)
+        print(Style.RESET_ALL)
 
-        if len(list(self.item)) > 0:
-            self.data.append(self.item.copy())
+        # if len(list(self.item)) > 0:
+        #     self.data.append(self.item.copy())
 
-        print(self.chrono.end())
+        tzprint(self.chrono.end(), self.depth)
+
+        # mongo({
+        #     "db": 'storage',
+        #     "collection": "tables",
+        #     "action": "edit",
+        #     "selector": {"_id": self.automnation.get('_id')},
+        #     "updator": {
+        #         'active': False,
+        #         'status': 'Finished',
+        #     }
+        # })
 
         return
