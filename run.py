@@ -9,19 +9,19 @@ from selenium_driver import SeleniumDriver
 
 data = []
 auth = []
-headless = False
+headless = True
 
 # driver = SeleniumDriver(headless=headless)
 
 # ------------- INPUTS -------------
 
 urls = [
-  # f'https://candidat.pole-emploi.fr/offres/recherche?lieux=11R&motsCles=secr%C3%A9taire+m%C3%A9dical&natureOffre=FS,E2&offresPartenaires=true&range=0-19&rayon=10&tri=0',
+  f'https://candidat.pole-emploi.fr/offres/recherche?lieux=11R&motsCles=secr%C3%A9taire+m%C3%A9dical&natureOffre=FS,E2&offresPartenaires=true&range=0-19&rayon=10&tri=0',
   # f"https://candidat.pole-emploi.fr/offres/recherche?lieux=11R&motsCles=moniteur+de+sport&natureOffre=FS,E2&offresPartenaires=true&range=0-19&rayon=10&tri=0",
   # f"https://candidat.pole-emploi.fr/offres/recherche?domaine=D&lieux=11R&natureOffre=E2&offresPartenaires=true&range=0-19&rayon=10&tri=0",
   # f"https://candidat.pole-emploi.fr/offres/recherche?lieux=11R&natureOffre=FS,E2&offresPartenaires=true&range=0-19&rayon=10&tri=0",
 
-  # f"https://www.hellowork.com/fr-fr/emploi/recherche.html?k=Secr%C3%A9taire+m%C3%A9dical&k_autocomplete=http%3A%2F%2Fwww.rj.com%2FCommun%2FPost%2FSecretaire_medical&l=%C3%8Ele-de-France&l_autocomplete=http%3A%2F%2Fwww.rj.com%2Fcommun%2Flocalite%2Fregion%2F11&ray=20&c=Alternance&msa=&cod=all&d=all&c_idesegal=",
+  f"https://www.hellowork.com/fr-fr/emploi/recherche.html?k=Secr%C3%A9taire+m%C3%A9dical&k_autocomplete=http%3A%2F%2Fwww.rj.com%2FCommun%2FPost%2FSecretaire_medical&l=%C3%8Ele-de-France&l_autocomplete=http%3A%2F%2Fwww.rj.com%2Fcommun%2Flocalite%2Fregion%2F11&ray=20&c=Alternance&msa=&cod=all&d=all&c_idesegal=",
   # f"https://www.hellowork.com/fr-fr/emploi/recherche.html?k=Coach+sportif&k_autocomplete=http%3A%2F%2Fwww.rj.com%2FCommun%2FPost%2FEntraineur_sportif&l=%C3%8Ele-de-France&l_autocomplete=http%3A%2F%2Fwww.rj.com%2Fcommun%2Flocalite%2Fregion%2F11&ray=20&msa=&cod=all&d=all&c_idesegal=",
   # f"https://www.hellowork.com/fr-fr/emploi/recherche.html?l=%C3%8Ele-de-France&d=all&c=Alternance&f=Commercial_technico_com&f=Commercial_particulier&f=Commercial_professionnel&f=Commercial_vendeur&f=Import_export_inter&f=Dir_management_resp&f=Negociation_gest_immo",
   # f"https://www.hellowork.com/fr-fr/emploi/recherche.html?l=%C3%8Ele-de-France&d=all&c=Alternance&p=1",
@@ -43,6 +43,24 @@ urls = [
   # f'https://www.google.com/maps/search/traiteur/@48.8285713,2.1879121,13z?entry=ttu'
 ]
 
+medico_social_company = [
+  #  f"https://www.google.com/maps/search/%C3%A9tablissement+d'accueil+m%C3%A9dicalis%C3%A9/@48.866726,2.3378585,12z/data=!3m1!4b1?entry=ttu",
+  #  f"https://www.google.com/maps/search/foyer+d'accueil+m%C3%A9dicalis%C3%A9/@48.8665588,2.3378587,12z/data=!3m1!4b1?entry=ttu",
+  #  f"https://www.google.com/maps/search/SESSAD/@48.8668931,2.3378582,12z/data=!3m1!4b1?entry=ttu"
+  #  f"https://www.google.com/maps/search/Foyer+de+vie/@48.8663917,2.337859,12z/data=!3m1!4b1?entry=ttu"
+  #  f"https://www.google.com/maps/search/institut+m%C3%A9dico-%C3%A9ducatif/@48.8670602,2.3378579,12z/data=!3m1!4b1?entry=ttu"
+  #  f"https://www.google.com/maps/search/externat+m%C3%A9dico+psychologique/@48.8672274,2.3378576,12z/data=!3m1!4b1?entry=ttu"
+  #  f"https://www.google.com/maps/search/EPHAD/@48.8672274,2.3378576,12z?entry=ttu"
+  #  f"https://www.google.com/maps/search/Maison+d'enfants+%C3%A0+caract%C3%A8re+social/@48.8675616,2.337857,12z/data=!3m1!4b1?entry=ttu"
+  #  f"https://www.google.com/maps/search/centre+d'accueil+de+jour/@48.8678959,2.3378565,12z/data=!3m1!4b1?entry=ttu"
+  #  f"https://www.google.com/maps/search/unit%C3%A9s+d%E2%80%99enseignement+Autisme/@48.868063,2.3378562,12z/data=!3m1!4b1?entry=ttu"
+  #  f"https://www.google.com/maps/search/cabinet+m%C3%A9dical/@48.8682302,2.3378559,12z/data=!3m1!4b1?entry=ttu"
+  #  f"https://www.google.com/maps/search/centres+m%C3%A9dico-psycho-p%C3%A9dagogiques/@48.8682302,2.3378559,12z?entry=ttu"
+  #  f"https://www.google.com/maps/search/ESAT/@48.8685644,2.3378553,12z/data=!3m1!4b1?entry=ttu"
+  #  f"https://www.google.com/maps/search/Institut+th%C3%A9rapeutique+%C3%A9ducatif+et+p%C3%A9dagogique/@48.8685644,2.3378553,12z?entry=ttu"
+  #  f"https://www.google.com/maps/search/maison+d%E2%80%99accueil%C2%A0sp%C3%A9cialis%C3%A9e/@48.8687316,2.3378551,12z?entry=ttu"
+]
+
 # filename = "google_maps_test"
 
 # auth = [
@@ -53,9 +71,7 @@ urls = [
 # ]
 
 automnation_id = "64f91b86bd602b8bd6d2ea76"
-filename = None
-
-# threads = []
+filename = 'medico_social_company'
 
 # d = mongo({
 #   'db': "storage",
@@ -63,30 +79,42 @@ filename = None
 # })
 # pprint(d)
 
-# for url in urls:
-  # s = Sequence(
-  #    urls=urls, 
-  #    auth=auth, 
-  #    filename=filename, 
-  #    headless=headless,
-  #    automnation={"_id": automnation_id})
-  # thread = threading.Thread(target=s.play)
-#   threads.append(thread)
-#   thread.start()
-#   time.sleep(2)
+# ------------- THREADING -------------
 
-# for thread in threads:
-#     thread.join()
+threads = []
+for url in medico_social_company:
+  s = Sequence(
+     url=url, 
+    #  auth=auth, 
+     filename=filename, 
+     headless=headless,
+     automnation={"_id": automnation_id})
+  thread = threading.Thread(target=s.play)
+  threads.append(thread)
+  thread.start()
+  time.sleep(2)
+for thread in threads:
+    thread.join()
 
-sequence = Sequence(
-  url=urls[0], 
-  # auth=auth,
-  headless=headless)
+# for url in medico_social_company:
+#   s = Sequence(
+#     url=url, 
+#   #  auth=auth, 
+#     filename=filename, 
+#     headless=headless,
+#     automnation={"_id": automnation_id})
+#   s.play()
 
-# ----------------------------
+# sequence = Sequence(
+#   url=urls[0], 
+#   filename=filename,
+#   # auth=auth,
+#   headless=headless)
 
-sequence.play()
+# -------------- RESULT --------------
+
+# sequence.play()
 # data = sequence.data
 # pprint(data)
 
-time.sleep(9999)
+time.sleep(20)

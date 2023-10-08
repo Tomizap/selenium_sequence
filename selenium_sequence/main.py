@@ -28,18 +28,24 @@ class Sequence:
             sequence=None,
             depth=0,
             # step={}, 
-            auth=None, 
+            # auth=None, 
             headless=False,
             sequenceid=None,
+            automnation={},
             filename=None) -> None:
 
         self.chrono = Chronos()
         self.chrono.start()
 
         self.depth = depth
-        tzprint(f'init Sequence (depth: {self.depth})', self.depth)
+        print(f'init Sequence (depth: {self.depth})', self.depth)
+
+        # self.automnation = mongo({
+        #     "selector": {automnation.get('_id')}
+        # })
 
         self.data = data
+
         if driver is None:
             self.driver = SeleniumDriver(headless=headless)
         else:
@@ -60,6 +66,7 @@ class Sequence:
 
         if self.model.get('require_auth') is True:
             print('require_auth')
+            auth = automnation.get('auth')
             if type(auth) is list:
                 for cookie in auth:
                     cookie = {
@@ -93,6 +100,7 @@ class Sequence:
         #     }
 
     def add_item(self, item={}):
+
         self.data.extend(item)
 
         if self.filename is not None:
@@ -116,17 +124,18 @@ class Sequence:
     def update_item(self, name, value):
         self.item.__setattr__(name, value)
 
-    # AUTOMNATION INTERACTION                
+    # AUTOMNATION                
+    
+    # def get_automnation(self)
     
     def update_automnation(self, updator):
-        # return mongo({
-        #     "db": 'storage',
-        #     "collection": "tables",
-        #     "action": "edit",
-        #     "selector": {"_id": self.automnation.get('_id')},
-        #     "updator": updator
-        # })
-        pass
+        return mongo({
+            "db": 'tools',
+            "collection": "automnation",
+            "action": "edit",
+            "selector": {"_id": self.automnation.get('_id')},
+            "updator": updator
+        })
     
     def pause_automnation(self):
         # return mongo({
@@ -308,7 +317,6 @@ class Sequence:
                         for attr in self.item.__dict__:
                             self.update_item(attr, "")
                             
-                        
                         model = find_model(url=url)
                         loop_sequence = Sequence(
                             driver=self.driver, 
@@ -317,20 +325,31 @@ class Sequence:
                         loop_sequence.play()
 
                         model = loop_sequence.model
-                        loop_sequence.update_item(model.get('type', '') + "_URL", url)
+                        loop_sequence.update_item("SOURCE_URL", url)
                         item = loop_sequence.item.__dict__
                         pprint(item)
                         
+                        print(Fore.GREEN + f"+1 item scrapped ({u + 1}/{len(listing)})")
                         item_exist = False
+                        # item_exist_dict = {}
+                        # print(str(self.data))
+                        # print(Fore.WHITE + f"data: {self.data}")
                         for key in item:
-                            if 'EMAIL' in key or 'PHONE' in key or 'WEBSITE_URL' in key:
-                                if item[key] in str(self.data):
+                            if 'EMAIL' in key or 'PHONE' in key:
+                                if item[key] != '' and item[key] in str(self.data):
+                                    # print(Fore.WHITE + f"data: {self.data}")
+                                    # print(Fore.WHITE + f"item[key]: {item[key]}")
                                     item_exist = True
+                                    # item_exist_dict = item
+                                    break
                         if item_exist:
+                            # print(Fore.WHITE + f"data: {self.data}")
+                            print(Fore.RED + f"item already exist")
+                            print(Style.RESET_ALL)
                             continue
-
                         self.add_item(item)
-                        tzprint(Fore.GREEN + f"+1 item scrapped ({u + 1}/{len(listing)})", self.depth)
+                        print(f"item added to data")
+                        print(Style.RESET_ALL)
 
                     print(Style.RESET_ALL)
                 continue

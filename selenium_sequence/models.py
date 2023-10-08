@@ -494,7 +494,7 @@ all_models = [
         "RegexUrl": ["/jobs", "/emplois"],
         "sequence": {
             ":loop": {
-                # "page": 1,
+                "page": 1,
                 "pagination": 'a[data-testid="pagination-page-next"]',
                 "listing": {
                     ":click_11qsdhyu": "button#onetrust-accept-btn-handler",
@@ -646,7 +646,7 @@ all_models = [
         "RegexUrl": ['/maps'],
         "sequence": {
             ":loop": {
-                "page": 1,
+                # "page": 1,
                 "pagination": 'body',
                 "replace": True,
                 "listing": {
