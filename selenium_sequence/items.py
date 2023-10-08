@@ -42,7 +42,7 @@ class Thing(Item):
       # "TITLE": '',
       "DESCRIPTION": '',
       "NAME": '',
-      "LOCATION": 'France',
+      "LOCATION": '',
       # "WEBSITE": '',
       # "PHONE": '',
       # "EMAIL": '',
@@ -91,20 +91,36 @@ class CompanyItem(Item):
     self.set_item(fields=Thing().__dict__, prefix=prefix)
     self.set_item(fields={
       "HIRING": False,
-      "HIRING_EXPERIENCE": "Positive",
-      "HIRING_DIFFICULTY": "Moyenne",
+      "HIRING_EXPERIENCE": "",
+      "HIRING_DIFFICULTY": "",
       "HIRING_TIME": "",
       "HIRING_STATUS": "",
 
       "JOBS_COUNT": "",
 
-      "RATING": "5",
-      "RATING_COUNT": "0",
+      "RATING": "",
+      "RATING_COUNT": "",
 
       # "WEBSITE": "",
       "CREATION_DATE": "",
-      "EMPLOYEES_COUNT": "1+",
+      "EMPLOYEES_COUNT": "",
       "REVENUE": "",
+      "SECTOR": "",
+
+      "INDEED_URL": ""
+    }, prefix=prefix)
+    self.set_item(fields=ContactItem().__dict__, prefix=prefix)
+    self.set_item(fields=UrlsItem().__dict__, prefix=prefix)
+    self.set_item(fields=fields, prefix=prefix)
+
+
+class SchoolItem(Item):
+  def __init__(self, fields={}, prefix='SCHOOL'):
+    self.set_item(fields=Thing().__dict__, prefix=prefix)
+    self.set_item(fields={
+      "RATING": "",
+      "RATING_COUNT": "",
+
       "SECTOR": "",
 
       "INDEED_URL": ""
@@ -125,7 +141,7 @@ class PeopleItem(Item):
       "JOB": ""
     }, prefix=prefix)
     self.set_item(fields=ContactItem().__dict__, prefix=prefix)
-    self.set_item(fields=UrlsItem().__dict__, prefix='')
+    self.set_item(fields=UrlsItem().__dict__, prefix=prefix)
     self.set_item(fields=fields, prefix=prefix)
 
 
@@ -137,7 +153,7 @@ class JobItem(Item):
 
     self.set_item(fields=Thing().__dict__, prefix=prefix)
     self.set_item(fields={
-      "TIME": "Il y a moins d'un mois",
+      "TIME": "",
       "SPECIFICATIONS": "",
       "REVENUE": "",
       "APPLICATION_COUNT": "",
@@ -146,23 +162,21 @@ class JobItem(Item):
       "REQUIREMENTS": "",
 
       "WORKTIME": "",
-      "WORKSPACE": "Sur site",
-      "WORKHOURS": "7h / jour",
+      "WORKSPACE": "",
+      "WORKHOURS": "",
 
       "INDEED_URL": "",
       "LINKEDIN_URL": "",
       "HELLOWORK_URL": "",
       "WELCOME_TO_THE_JUNLGE_URL": "",
     }, prefix=prefix)
-    
-    # self.set_item(fields=UrlsItem().__dict__, prefix=prefix)
     self.set_item(fields=CompanyItem({
-      "HIRING_STATUS": "hiring",
-      "HIRING": True,
-      "JOBS_COUNT": "1+",
-      "HIRING_TIME": "Il y a moins d'un mois"
+      "HIRING_STATUS": "",
+      "HIRING": "",
+      "JOBS_COUNT": "",
+      "HIRING_TIME": ""
     }).__dict__)
-    # self.set_item(fields=PeopleItem().__dict__, prefix='RECRUITER')
+    self.set_item(fields=PeopleItem().__dict__, prefix='RECRUITER')
 
     self.set_item(fields=fields, prefix=prefix)
 

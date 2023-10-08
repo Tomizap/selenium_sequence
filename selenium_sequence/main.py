@@ -62,7 +62,9 @@ class Sequence:
             print('require_auth')
             if type(auth) is list:
                 for cookie in auth:
-                    cookie = {'name': cookie.get('name'), 'value': cookie.get('value')}
+                    cookie = {
+                        'name': cookie.get('name'), 
+                        'value': cookie.get('value')}
                     self.driver.add_cookie(cookie)
                 self.driver.get(url)
                 self.model = find_model(url)
@@ -95,7 +97,7 @@ class Sequence:
 
         if self.filename is not None:
             add_data_to_csv(data=[item], filename=self.filename)
-            add_data_to_json(data=[item], filename=self.filename)
+            # add_data_to_json(data=[item], filename=self.filename)
 
         if self.automnation.get('_id') is not None:
             edit = self.update_automnation({
@@ -270,10 +272,13 @@ class Sequence:
                         depth=self.depth + 1)
                     listing_sequence.play()
 
+                    
                     if value.get('replace') == True:
                         listing = listing_sequence.data
                     else:
-                        listing.extend(listing_sequence.data.copy())
+                        for data_url in listing_sequence.data:
+                            if data_url not in listing:
+                                listing.append(data_url)
                     
                     self.driver.click(value['pagination'])
 
@@ -291,7 +296,9 @@ class Sequence:
                     continue
 
                 for u in range(len(listing)):
+                    
                     url = listing[u]
+                    # next(item for item in listing if item["name"] == "Pam")
 
                     if type(url) == str:
 
@@ -301,33 +308,30 @@ class Sequence:
                         for attr in self.item.__dict__:
                             self.update_item(attr, "")
                             
-                        # self.update_item(, "")
+                        
                         model = find_model(url=url)
                         loop_sequence = Sequence(
                             driver=self.driver, 
-                            # url=url,
-                            # data=[], 
-                            # item=Item(fields={
-                            #     self.item.__dict__.get(self.model.get('type'), '') + "_URL": url
-                            # }), # type: ignore
                             sequence=model.get('sequence'),
                             depth=self.depth + 1)
                         loop_sequence.play()
 
                         model = loop_sequence.model
-                        # datatype = str(model.get('type'), '')
                         loop_sequence.update_item(model.get('type', '') + "_URL", url)
                         item = loop_sequence.item.__dict__
-                        # item.__setattribute__()
                         pprint(item)
+                        
+                        item_exist = False
+                        for key in item:
+                            if 'EMAIL' in key or 'PHONE' in key or 'WEBSITE_URL' in key:
+                                if item[key] in str(self.data):
+                                    item_exist = True
+                        if item_exist:
+                            continue
 
                         self.add_item(item)
+                        tzprint(Fore.GREEN + f"+1 item scrapped ({u + 1}/{len(listing)})", self.depth)
 
-                        # if len(items_loop) == 1:
-                        #     self.data.append(items_loop[0].copy())
-                        # elif len(items_loop) > 1:
-                        #     self.data.extend(items_loop)
-                    tzprint(Fore.GREEN + f"+1 item scrapped ({u + 1}/{len(listing)})", self.depth)
                     print(Style.RESET_ALL)
                 continue
                 
@@ -363,6 +367,15 @@ class Sequence:
                         name=name,
                         location=location,
                     )
+
+                    if ":contact" in step:
+                        result = str(finder.email())
+                        result = str(finder.phone())
+                        result = str(finder.website())
+                        result = str(finder.linkedin())
+                        result = str(finder.indeed())
+                        result = str(finder.facebook())
+                        result = str(finder.youtube())
 
                     if ":email" in step:
                         result = str(finder.email())
@@ -425,7 +438,7 @@ class Sequence:
                         if value.get('replace') == str:
                             self.update_item(
                                 step_property, 
-                                re.sub(value.get('replace'), '', self.item.__getattribute__(step_property)))
+                                re.sub(value.get('replace', ''), '', self.item.__getattribute__(step_property)))
                         # print(Fore.GREEN + self.item.__getattribute__(step_property))
                     else:
                         print(Fore.RED + 'Nothing to get')

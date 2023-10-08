@@ -62,22 +62,28 @@ sequences = {
             ":click_dgsuyd87": ".artdeco-global-alert__body button",
             "COMPANY_NAME:get": "h1 > span",
             "COMPANY_LOCATION:get": ".org-top-card-summary-info-list > .inline-block > div",
+            "JOB_LOCATION:get": ".org-top-card-summary-info-list > .inline-block > div",
             "COMPANY_DESCRIPTION:get": "p.org-top-card-summary__tagline",
             "COMPANY_SECTOR:get": ".org-top-card-summary-info-list > div",
             f"COMPANY_EMAIL:find:email": {},
             f"COMPANY_PHONE:find:phone": {},
             # "COMPANY_LINKEDIN_SUSCRIBERS_COUNT:get": ".org-top-card-summary-info-list > .inline-block > div:nth-child(2)",
-            "COMPANY_EMPLOYEES_COUNT:get": ".org-top-card-summary-info-list > .inline-block > div:nth-child(3)",
-            # f":click_43ds": "ul.org-page-navigation__items > li:nth-child(2)",
-            # f":wait_fd643": 2,
-            # "COMPANY_WEBSITE:get": "dl > dd a"
+            "COMPANY_EMPLOYEES_COUNT:get": ".org-top-card-summary-info-list > .inline-block > div + div",
+            "COMPANY_WEBSITE_URL:find:website": {},
+            "COMPANY_LINKEDIN_URL:find:linkedin": {},
+            "COMPANY_INDEED_URL:find:indeed": {},
+            "COMPANY_FACEBOOK_URL:find:facebook": {},
+            "COMPANY_YOUTUBE_URL:find:youtube": {},
         },
         "JOB": {
             ":click_dgsuyd87": ".artdeco-global-alert__body button",
             "JOB_NAME:get": ".job-view-layout.jobs-details h1",
+            "JOB_DESCRIPTION:get": ".job-details > span",
             # "JOB_LOCATION:get": "span.jobs-unified-top-card__bullet",
             "JOB_TIME:get": ".jobs-unified-top-card__primary-description .tvm__text",
-            "JOB_APPLICATION_COUNT:get": '.jobs-unified-top-card__primary-description .tvm__text:last-child',
+            "JOB_APPLICATION_COUNT:get": '.job-details-jobs-unified-top-card__primary-description .tvm__text:last-child',
+            "JOB_WORKTIME:get": '.job-details-jobs-unified-top-card__job-insight span + span',
+            "JOB_REQUIREMENTS:get": '.job-details-jobs-unified-top-card__job-insight span span:last-child',
             # "JOB_SPECIFICATIONS:get": "ul > li.jobs-unified-top-card__job-insight > span",
         },
         "PEOPLE": {
@@ -204,6 +210,23 @@ sequences = {
             'COMPANY_EMAIL:find:email': {},
             'COMPANY_PHONE:find:phone': {},
         }
+    },
+    "labonnealternance": {
+        "JOBS": {
+            "JOB_NAME": "h1",
+            "JOB_LOCATION": "#itemDetailColumn > header div.css-acwv4d",
+            "JOB_DESCRIPTION": "#itemDetailColumn div.css-2qrmgs",
+            "JOB_TYPE": "#itemDetailColumn div.css-rz1orx > div:nth-child(1)",
+            "JOB_TIME": "#itemDetailColumn div.css-rz1orx > div:nth-child(2)",
+            "JOB_WORKTIME": "#itemDetailColumn div.css-rz1orx > div:nth-child(4)",
+            "COMPANY_PHONE:find:phone": {},
+            "COMPANY_EMAIL:find:email": {},
+            "COMPANY_WEBSITE_URL:find:website": {},
+            "COMPANY_LINKEDIN_URL:find:linkedin": {},
+            "COMPANY_INDEED_URL:find:indeed": {},
+            "COMPANY_FACEBOOK_URL:find:facebook": {},
+            "COMPANY_YOUTUBE_URL:find:youtube": {},
+        }
     }
 }
 
@@ -296,18 +319,9 @@ all_models = [
             "ADDRESS:get": 'p[data-test="address-prop"] > span[itemprop="streetAddress"]'
         }
     },
-    # ------------------ google.com ------------------
-    # {
-    #     "website": "google.com",
-    #     "type": "COMPANY",
-    #     "RegexUrl": ["/maps/search"],
-    #     "sequence": {
-    #         ":googlemaps": {
 
-    #         }
-    #     }
-    # },
     # ------------------ 123ecoles.com ------------------
+
     {
         "website": "123ecoles.com",
         "type": "school",
@@ -394,17 +408,9 @@ all_models = [
         "sequence": {
             # JOB
             f":sequence_1": sequences['linkedin']['JOB'],
-            # ":wait_31": 2,
-            # COMPANY
-            # "COMPANY_LINKEDIN:get": {
-            #     "selector": "section.jobs-company a, .jobs-unified-top-card a",
-            #     "property": "href"
-            # },
             f":goto_1": "section.jobs-company a, .jobs-unified-top-card a",
             f":sequence_2": sequences['linkedin']['COMPANY'],
             f":goto_2": ":original_url",
-            # ":wait_3438": 2,
-            # RECRUITER
             "RECRUITER_LINKEDIN_URL:get": {
                 "selector": ".hirer-card__hirer-information > a.app-aware-link",
                 "property": "href"
@@ -571,7 +577,130 @@ all_models = [
         "RegexUrl": ["/page-entreprise"],
         "sequence": sequences['pole_emploi']['COMPANY']
     },
+
+    # ------------------ labonnealternance.apprentissage.beta.gouv.fr ------------------
+
+    {
+        "website": "labonnealternance.apprentissage.beta.gouv.fr",
+        "type": "JOB",
+        "require_auth": False,
+        "fields": JobItem,
+        "action": "scrapping",
+        "RegexUrl": ["page=fiche"],
+        "sequence": {
+            "COMPANY_NAME:get": '#itemDetailColumn > header > div > p > span.chakra-text',
+            "COMPANY_LOCATION:get": '#itemDetailColumn > header > div > div.css-acwv4d',    
+            ":sequence_dsbuh": sequences['labonnealternance']['JOBS'],
+        }
+    },
+    {
+        "website": "labonnealternance.apprentissage.beta.gouv.fr",
+        "type": "JOBS",
+        "require_auth": False,
+        "fields": JobItem,
+        "action": "scrapping",
+        "RegexUrl": ["/recherche-apprentissage"],
+        "sequence": {
+            ":loop": {
+                "page": 1,
+                "pagination": "body",
+                # "replace": True,
+                "listing": {
+                    ":get:all": {"property": "href", "selector": '#jobList .chakra-link'}
+                },
+            }
+        }
+    },
+
+    # ------------------ google.com ------------------
+
+    {
+        "website": "google.com",
+        "type": "COMPANY",
+        "require_auth": False,
+        "fields": CompanyItem,
+        "action": "scrapping",
+        "RegexUrl": ["/maps/place/"],
+        "sequence": {
+            ":click_button": "#content aside a + a, #main aside a + a",
+            "COMPANY_NAME:get": 'h1',
+            "COMPANY_LOCATION:get": '[data-item-id="address"] .rogA2c',
+            "COMPANY_SECTOR:get": "#QA0Szd > div > div > div.w6VYqd > div:nth-child(2) > div > div.e07Vkf.kA9KIf > div > div > div.TIHn2 > div > div.lMbq3e > div.LBgpqf > div > div:nth-child(2) > span > span > button",
+            "COMPANY_PHONE:get": '[data-tooltip="Copier le numéro de téléphone"] .rogA2c',
+            "COMPANY_WEBSITE_URL:get": '[data-item-id="authority"] .rogA2c',
+            "COMPANY_PHONE:find:phone": {},
+            "COMPANY_EMAIL:find:email": {},
+            "COMPANY_WEBSITE_URL:find:website": {},
+            "COMPANY_LINKEDIN_URL:find:linkedin": {},
+            "COMPANY_INDEED_URL:find:indeed": {},
+            "COMPANY_FACEBOOK_URL:find:facebook": {},
+            "COMPANY_YOUTUBE_URL:find:youtube": {},
+        }
+    },
+    {
+        "website": "google.com",
+        "type": "COMPANIES",
+        "require_auth": False,
+        "fields": CompanyItem,
+        "action": "scrapping",
+        "RegexUrl": ['/maps'],
+        "sequence": {
+            ":loop": {
+                "page": 1,
+                "pagination": 'body',
+                "replace": True,
+                "listing": {
+                    ':wait': 2,
+                    ":execute_script": 'document.querySelector("#QA0Szd > div > div > div.w6VYqd > div:nth-child(2) > div > div.e07Vkf.kA9KIf > div > div > div.m6QErb.DxyBCb.kA9KIf.dS8AEf.ecceSd > div.m6QErb.DxyBCb.kA9KIf.dS8AEf.ecceSd").scroll(0, 999999999)',
+                    # ":click_fd": "button#tarteaucitronPersonalize2",
+                    ":get:all": {"property": "href", "selector": 'a.hfpxzc'}
+                },
+            }
+        }
+    },
+
+    # ------------------ onisep.fr ------------------
+
+    {
+        "website": "onisep.fr",
+        "type": "SCHOOLS",
+        "require_auth": False,
+        "fields": SchoolItem,
+        "action": "scrapping",
+        "RegexUrl": [r"ressources\/univers-formation\/formations\/.{1,}\#etablissements"],
+        "sequence": {
+            ":loop": {
+                # "page": 1,
+                "pagination": 'nav[role="navigation"] li.search-header-pagination-next',
+                # "replace": True,
+                "listing": {
+                    ":click_fd": "button#tarteaucitronPersonalize2",
+                    ":get:all": {"property": "href", "selector": '#etablissements div.search-ui-result-outer table a'}
+                },
+            }
+        }
+    },
+    {
+        "website": "onisep.fr",
+        "type": "SCHOOL",
+        "require_auth": False,
+        "fields": SchoolItem,
+        "action": "scrapping",
+        "RegexUrl": [
+            "/ressources/Univers-Lycee/", 
+            "/ressources/Univers-Postbac/"],
+        "sequence": {
+            ":click_button": "#content aside a + a, #main aside a + a",
+            "SCHOOL_NAME:get": "h1",
+            "SCHOOL_LOCATION:get": "#adresse .callout-text + div > span + span",
+            "SCHOOL_PHONE:get": "#contact .callout-text span",
+            "SCHOOL_WEBSITE:get": "#contact .callout-text a",
+            "SCHOOL_EMAIL:get": "#contact .callout-text + div a",
+        }
+    },
+
     # ------------------ hellowork.com ------------------
+
     {
         "website": "hellowork.com",
         "type": "JOBS",
@@ -582,7 +711,7 @@ all_models = [
         "sequence": {
             ":loop": {
                 # "page": 1,
-                "pagination": "#pagin > div > div > div:nth-child(2) > div > ul > li.s",
+                "pagination": "#pagin > div > div > div:nth-child(2) > div > ul > li.next",
                 "replace": False,
                 "listing": {
                     ":click-cookie": "#hw-cc-notice-accept-btn",
@@ -637,7 +766,7 @@ def find_model(url=None, action=None) -> dict:
     for model in models:
         if model['website'] in url:
             for regex in model['RegexUrl']:
-                if regex in url:
+                if regex in url or bool(re.search(regex, url)):
                     print(Fore.GREEN + 'model founded')
                     # pprint(model)
                     print(Style.RESET_ALL)
