@@ -8,7 +8,7 @@ from datetime import datetime
 from colorama import Fore, Style
 
 
-def add_data_to_csv(data=[], directory="C:/Users/Conta/Downloads", filename=None):
+def add_data_to_csv(data=[], directory="C:/Users/Conta/Desktop/selenium_sequence/data", filename=None):
     print('add_data_to_csv')
 
     # Obtaining the current date

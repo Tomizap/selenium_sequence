@@ -65,11 +65,11 @@ class UrlsItem(Item):
 
     self.set_item(fields={
       "LINKEDIN_URL": "",
-      "TWITTER_URL": "",
+      # "TWITTER_URL": "",
       "FACEBOOK_URL": "",
-      "YOUTUBE_URL": "",
+      # "YOUTUBE_URL": "",
       "WEBSITE_URL": "",
-      "INSTAGRAM_URL": "",
+      # "INSTAGRAM_URL": "",
     }, prefix=prefix)
     self.set_item(fields=fields, prefix=prefix)
 # th = Thing()
@@ -101,13 +101,13 @@ class CompanyItem(Item):
       "RATING": "",
       "RATING_COUNT": "",
 
-      # "WEBSITE": "",
+      "WEBSITE": "",
       "CREATION_DATE": "",
       "EMPLOYEES_COUNT": "",
       "REVENUE": "",
       "SECTOR": "",
 
-      "INDEED_URL": ""
+      # "INDEED_URL": ""
     }, prefix=prefix)
     self.set_item(fields=ContactItem().__dict__, prefix=prefix)
     self.set_item(fields=UrlsItem().__dict__, prefix=prefix)

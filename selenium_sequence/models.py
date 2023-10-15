@@ -239,7 +239,7 @@ all_models = [
         "fields": JobItem,
         "action": "scrapping",
         "RegexUrl": ["/recherche/offres-emploi"],
-        "sequence": {
+        "steps": {
             ":loop": {
                 "page": '.v-pagination li:nth-last-child(2)',
                 # "page": 1,
@@ -261,7 +261,7 @@ all_models = [
         "fields": JobItem,
         "action": "scrapping",
         "RegexUrl": ["/offres-emploi"],
-        "sequence": {
+        "steps": {
             'COMPANY_NAME:get': 'b.jobs-header--info--company--name',
             'COMPANY_LOCATION:get': '.jobs-header--info--details img[alt="pin"] + *',
             'COMPANY_RATE:get': 'small.star-rating--value__gold',
@@ -281,7 +281,7 @@ all_models = [
         "fields": CompanyItem,
         "action": "scrapping",
         "RegexUrl": ["/entreprises/"],
-        "sequence": sequences["lefigaro"]['COMPANY']
+        "steps": sequences["lefigaro"]['COMPANY']
     },
     # ------------------ lannuaire.service-public.fr ------------------
     {
@@ -291,7 +291,7 @@ all_models = [
         "fields": CompanyItem,
         "action": "scrapping",
         "RegexUrl": ["/navigation/ile-de-france/mairie"],
-        "sequence": {
+        "steps": {
             ":loop": {
                 # "pagination": 1,
                 "pagination": '#main > div.sp-old > div > div > article > div > div > nav > ul > li:nth-last-child(2) > a',
@@ -309,7 +309,7 @@ all_models = [
         "fields": CompanyItem,
         "action": "scrapping",
         "RegexUrl": ["/ile-de-france/"],
-        "sequence": {
+        "steps": {
             "NAME:get": 'h1[itemprop="name"]',
             "PHONE:get": "#contentPhone_1",
             "EMAIL:get": 'span[itemprop="email"] > a',
@@ -329,7 +329,7 @@ all_models = [
         "fields": CompanyItem,
         "action": "scrapping",
         "RegexUrl": ["/etablissements-scolaires-"],
-        "sequence": {
+        "steps": {
             ":loop": {
                 "pagination": 1,
                 # "pagination": 'div.jobs-search-results-list__pagination li:last-child',
@@ -346,7 +346,7 @@ all_models = [
         "fields": CompanyItem,
         "action": "scrapping",
         "RegexUrl": ["/"],
-        "sequence": {
+        "steps": {
             f"COMPANY:get": "body > div.main-wrap > div.main.ts-contain.cf.right-sidebar > div > div > div.the-post-header.s-head-modern.s-head-modern-a.has-share-meta-right > div > h1",
             # f"CONTACT:get": "#post-13703 > div > div > div:nth-child(13) > div",
             f"EMAIL:find:email": "",
@@ -362,7 +362,7 @@ all_models = [
         "fields": CompanyItem,
         "action": "scrapping",
         "RegexUrl": ["/"],
-        "sequence": {}
+        "steps": {}
     },
     {
         "website": "pagesjaunes.fr",
@@ -371,7 +371,7 @@ all_models = [
         "fields": CompanyItem,
         "action": "scrapping",
         "RegexUrl": ["/"],
-        "sequence": {}
+        "steps": {}
     },
     # ------------------ linkedin.com ------------------
     # JOBS
@@ -382,7 +382,7 @@ all_models = [
         "fields": JobItem,
         "action": "scrapping",        
         "RegexUrl": ["/jobs/search/"],
-        "sequence": {
+        "steps": {
             # ":wait_fdsfsd": 2,
             ":loop": {
                 # "page": 1,
@@ -405,7 +405,7 @@ all_models = [
         "fields": JobItem,
         "action": "scrapping",
         "RegexUrl": ["/jobs/view"],
-        "sequence": {
+        "steps": {
             # JOB
             f":sequence_1": sequences['linkedin']['JOB'],
             f":goto_1": "section.jobs-company a, .jobs-unified-top-card a",
@@ -427,7 +427,7 @@ all_models = [
         "fields": CompanyItem,
         "action": "scrapping",
         "RegexUrl": ["/search/results/companies"],
-        "sequence": {
+        "steps": {
             ":loop": {
                 "pagination": 1,
                 "listing": {
@@ -445,7 +445,7 @@ all_models = [
         "fields": CompanyItem,
         "action": "scrapping", 
         "RegexUrl": ["/company/"],
-        "sequence": sequences['linkedin']['COMPANY']
+        "steps": sequences['linkedin']['COMPANY']
     },
     {
         "website": "linkedin.com",
@@ -454,7 +454,7 @@ all_models = [
         "fields": CompanyItem,
         "action": "scrapping", 
         "RegexUrl": ["/school/"],
-        "sequence": sequences['linkedin']['COMPANY']
+        "steps": sequences['linkedin']['COMPANY']
     },
     # PEOPLE
     {
@@ -464,7 +464,7 @@ all_models = [
         "fields": {},
         "actn": "scrapping", 
         "RegexUrl": ["/search/results/people"],
-        "sequence": {
+        "steps": {
             ":loop": {
                 "pagination": 1,
                 "listing": {
@@ -482,7 +482,7 @@ all_models = [
         "fields": {},
         "actn": "scrapping", 
         "RegexUrl": ["/in/"],
-        "sequence": sequences['linkedin']['PEOPLE']
+        "steps": sequences['linkedin']['PEOPLE']
     },
     # ------------------ indeed.com ------------------
     {
@@ -492,9 +492,9 @@ all_models = [
         "fields": JobItem,
         "action": "scrapping", 
         "RegexUrl": ["/jobs", "/emplois"],
-        "sequence": {
+        "steps": {
             ":loop": {
-                "page": 1,
+                # "page": 1,
                 "pagination": 'a[data-testid="pagination-page-next"]',
                 "listing": {
                     ":click_11qsdhyu": "button#onetrust-accept-btn-handler",
@@ -514,7 +514,7 @@ all_models = [
         "fields": JobItem,
         "action": "scrapping", 
         "RegexUrl": ["/viewjob", '/job/', "/pagead/clk", "/rc/clk", "/company/"],
-        "sequence": {
+        "steps": {
             "COMPANY_NAME:get": '[data-testid="inlineHeader-companyName"]',
             "COMPANY_LOCATION:get": '[data-testid="inlineHeader-companyLocation"]',
             ':sequence_hdsui765': sequences["indeed"]['JOBS'],
@@ -529,7 +529,7 @@ all_models = [
         "fields": CompanyItem,
         "action": "scrapping",        
         "RegexUrl": ["/cmp/"],
-        "sequence": sequences['indeed']['COMPANY']
+        "steps": sequences['indeed']['COMPANY']
     },
     # ------------------ candidat.pole-emploi.fr ------------------
     {
@@ -539,7 +539,7 @@ all_models = [
         "fields": JobItem,
         "action": "scrapping",
         "RegexUrl": ["/offres/recherche?"],
-        "sequence": {
+        "steps": {
             ":loop": {
                 # "page": 1,
                 "pagination": "#zoneAfficherPlus a",
@@ -560,7 +560,7 @@ all_models = [
         "fields": JobItem,
         "action": "scrapping",
         "RegexUrl": ["/offres/recherche/detail/"],
-        "sequence": {
+        "steps": {
             "COMPANY_NAME:get": '[itemprop="hiringOrganization"] + h2 + .media .media-body h3',
             "COMPANY_LOCATION:get": '[itemprop="jobLocation"] [itemprop="name"]',    
             ":sequence_dsbuh": sequences['pole_emploi']['JOBS'],
@@ -575,7 +575,7 @@ all_models = [
         "fields": CompanyItem,
         "action": "scrapping",
         "RegexUrl": ["/page-entreprise"],
-        "sequence": sequences['pole_emploi']['COMPANY']
+        "steps": sequences['pole_emploi']['COMPANY']
     },
 
     # ------------------ labonnealternance.apprentissage.beta.gouv.fr ------------------
@@ -587,7 +587,7 @@ all_models = [
         "fields": JobItem,
         "action": "scrapping",
         "RegexUrl": ["page=fiche"],
-        "sequence": {
+        "steps": {
             "COMPANY_NAME:get": '#itemDetailColumn > header > div > p > span.chakra-text',
             "COMPANY_LOCATION:get": '#itemDetailColumn > header > div > div.css-acwv4d',    
             ":sequence_dsbuh": sequences['labonnealternance']['JOBS'],
@@ -600,7 +600,7 @@ all_models = [
         "fields": JobItem,
         "action": "scrapping",
         "RegexUrl": ["/recherche-apprentissage"],
-        "sequence": {
+        "steps": {
             ":loop": {
                 "page": 1,
                 "pagination": "body",
@@ -621,7 +621,7 @@ all_models = [
         "fields": CompanyItem,
         "action": "scrapping",
         "RegexUrl": ["/maps/place/"],
-        "sequence": {
+        "steps": {
             ":click_button": "#content aside a + a, #main aside a + a",
             "COMPANY_NAME:get": 'h1',
             "COMPANY_LOCATION:get": '[data-item-id="address"] .rogA2c',
@@ -644,9 +644,9 @@ all_models = [
         "fields": CompanyItem,
         "action": "scrapping",
         "RegexUrl": ['/maps'],
-        "sequence": {
+        "steps": {
             ":loop": {
-                # "page": 1,
+                "page": 1,
                 "pagination": 'body',
                 "replace": True,
                 "listing": {
@@ -668,7 +668,7 @@ all_models = [
         "fields": SchoolItem,
         "action": "scrapping",
         "RegexUrl": [r"ressources\/univers-formation\/formations\/.{1,}\#etablissements"],
-        "sequence": {
+        "steps": {
             ":loop": {
                 # "page": 1,
                 "pagination": 'nav[role="navigation"] li.search-header-pagination-next',
@@ -689,7 +689,7 @@ all_models = [
         "RegexUrl": [
             "/ressources/Univers-Lycee/", 
             "/ressources/Univers-Postbac/"],
-        "sequence": {
+        "steps": {
             ":click_button": "#content aside a + a, #main aside a + a",
             "SCHOOL_NAME:get": "h1",
             "SCHOOL_LOCATION:get": "#adresse .callout-text + div > span + span",
@@ -708,7 +708,7 @@ all_models = [
         "fields": JobItem,
         "action": "scrapping",
         "RegexUrl": ["/emploi/recherche.html?"],
-        "sequence": {
+        "steps": {
             ":loop": {
                 # "page": 1,
                 "pagination": "#pagin > div > div > div:nth-child(2) > div > ul > li.next",
@@ -729,7 +729,7 @@ all_models = [
         "fields": JobItem,
         "action": "scrapping",
         "RegexUrl": ["/emplois/"],
-        "sequence": {
+        "steps": {
             ":sequence_job": sequences["hellowork"]['JOB'],
             # "COMPANY_HELLOWORK:get": {
             #     'selector': '.tw-col-span-full > div > section a',
@@ -747,7 +747,7 @@ all_models = [
         "fields": CompanyItem,
         "action": "scrapping",
         "RegexUrl": ["/entreprise/", '/entreprises/'],
-        "sequence": sequences['hellowork']['COMPANY']
+        "steps": sequences['hellowork']['COMPANY']
     },
 ]
 
@@ -760,16 +760,16 @@ def find_model(url=None, action=None) -> dict:
     if url is None:
         return {
             "message": 'No url provided',
-            "sequence": {}
+            "steps": {}
         }
     # print(Fore.WHITE + 'find_model()')
     for model in models:
         if model['website'] in url:
             for regex in model['RegexUrl']:
                 if regex in url or bool(re.search(regex, url)):
-                    print(Fore.GREEN + 'model founded')
+                    # print(Fore.GREEN + 'model founded')
                     # pprint(model)
-                    print(Style.RESET_ALL)
+                    # print(Style.RESET_ALL)
                     return model
                 else:
                     pass
@@ -781,5 +781,5 @@ def find_model(url=None, action=None) -> dict:
     return {
         "ok": False,
         "message": 'No model found',
-        "sequence": {}
+        "steps": {}
     }

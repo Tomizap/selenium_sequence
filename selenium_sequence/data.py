@@ -12,7 +12,7 @@ def get_element_data(driver=None, selector=None, prop=None) -> str:
             find_element(selector).
             get_property(prop if prop is not None else 'innerText')).strip().split("\n")[0]
         
-        print(Fore.GREEN + value)
+        # print(Fore.GREEN + value)
         # if prop is not None:
         #     return str(driver.find_element(selector).get_property(prop)).strip().split("\n")[0]
         # else:
