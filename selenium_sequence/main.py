@@ -1,3 +1,4 @@
+import threading
 from colorama import Fore, Style
 from selenium_driver import SeleniumDriver
 from tzmongo import mongo
@@ -19,7 +20,7 @@ class Automnation:
             driver=None, 
             # item=None, 
             depth=0,
-            headless=False,
+            headless=True,
             filename=None,
             _id=None,
             urls=None, 
@@ -157,10 +158,11 @@ class Automnation:
                 steps=model.get('steps', {}),
                 source_url=url,
                 item=model.get('fields', Item)(),
-                automnation_id=self.automnation.get('_id') if self.automnation is not None else ''
+                automnation_id=self.automnation.get('_id') if self.automnation is not None else '',
             )
             main_sequence.play()
             # thread = threading.Thread(target=main_sequence.play)
+            # thread.start()
             # threads.append(thread)
         
         # for thread in threads:

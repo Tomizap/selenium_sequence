@@ -219,7 +219,7 @@ class Sequence:
               listing_sequence.play()
               
               if value.get('replace') == True:
-                  listing = listing_sequence.data
+                  listing = listing_sequence.data.copy()
               else:
                   for data_url in listing_sequence.data:
                       if data_url not in listing:

@@ -7,6 +7,22 @@ from datetime import datetime
 
 from colorama import Fore, Style
 
+def creer_fichier_csv(data, filename):
+    # Récupérer les clés de tous les dictionnaires pour définir les en-têtes
+    en_tetes = data[0].keys()
+
+    # Ouvrir le fichier CSV en mode écriture
+    with open(filename, mode='w', newline='', encoding='utf-8') as fichier_csv:
+        # Créer un objet DictWriter pour écrire les données
+        writer = csv.writer(fichier_csv)
+
+        # Écrire les en-têtes dans le fichier CSV
+        writer.writerow(en_tetes)
+
+        # Écrire les données à partir de la liste de dictionnaires
+        for dictionnaire in data:
+            writer.writerow(dictionnaire.values())
+
 
 def add_data_to_csv(data=[], directory="C:/Users/Conta/Desktop/selenium_sequence/data", filename=None):
     print('add_data_to_csv')
@@ -63,7 +79,6 @@ def add_data_to_csv(data=[], directory="C:/Users/Conta/Desktop/selenium_sequence
 
         print(Fore.GREEN + f"The data has been successfully added to '{file_path}'.")
         print(Style.RESET_ALL)
-
 
 # data_test = [{'COMPANY': {'APPLICATION_DIFFICULTY': '',
 #              'APPLICATION_EXPERIENCE': '',
