@@ -1,22 +1,18 @@
+from traceback import print_tb
 from colorama import Fore, Style
+from selenium_driver import SeleniumDriver
 
 
 def get_element_data(driver=None, selector=None, prop=None) -> str:
     if driver is None or selector is None:
         return ''
-    # print(Fore.WHITE + '-- get_element_data')
+    
     value = ''
     try:
         value = str(
             driver.
             find_element(selector).
             get_property(prop if prop is not None else 'innerText')).strip().split("\n")[0]
-        
-        # print(Fore.GREEN + value)
-        # if prop is not None:
-        #     return str(driver.find_element(selector).get_property(prop)).strip().split("\n")[0]
-        # else:
-        #     return str(driver.find_element(selector).get_property('innerText')).strip().split("\n")[0]
     except:
         print(Fore.RED + 'cannot get element')
    
@@ -24,12 +20,22 @@ def get_element_data(driver=None, selector=None, prop=None) -> str:
 
 
 def get_elements_data(driver=None, selector=None, prop=None) -> list:
-    if driver is None or selector is None:
+    # print('get_elements_data')
+    if driver is None:
+        print(Fore.RED + "Missing driver")
         return []
-    # print(Fore.WHITE + '-- get_elements_data')
+    if selector is None:
+        print(Fore.RED + "Missing selector")
+        return []
+
     data = []
-    # time.sleep(2)
+
+    # print(f'selector: {selector}')
     elements = driver.find_elements(selector)
+    if type(elements) != list:
+        print(Fore.RED + "No such elements")
+        return []
+
     for el in elements:
         if prop is not None:
             value = el.get_property(prop)
@@ -37,4 +43,6 @@ def get_elements_data(driver=None, selector=None, prop=None) -> list:
         else:
             value = el.get_property('innerText')
             data.append(value)
+    # print(elements)
+
     return data

@@ -17,7 +17,7 @@ class Automnation:
 
     def __init__(
             self, 
-            driver=None, 
+            # driver=None, 
             # item=None, 
             depth=0,
             headless=True,
@@ -33,10 +33,12 @@ class Automnation:
         self.depth = depth
         print(f'init Automnation')
 
-        if driver is None:
-            self.driver = SeleniumDriver(headless=headless)
-        else:
-            self.driver = driver
+        self.headless = headless
+
+        # if driver is None:
+        #     self.driver = SeleniumDriver(headless=headless)
+        # else:
+        #     self.driver = driver
 
         self.data = []
         self.automnation = None
@@ -50,7 +52,8 @@ class Automnation:
                 self.automnation = ga['data'][0]
             self.data = data
 
-        self.urls = [self.driver.current_url()]
+        # self.urls = [self.driver.current_url()]
+        self.urls = []
         if urls is not None:
             if type(urls) == str:
                 self.urls = [urls]
@@ -135,11 +138,13 @@ class Automnation:
         urls = self.urls
         print(f'{len(urls)} source_url to scrap')
 
-        threads = []
+        # threads = []
         for url in urls:
 
-            if url != self.driver.current_url():
-                self.driver.get(url)
+            driver = SeleniumDriver(headless=self.headless)
+
+            if url != driver.current_url():
+                driver.get(url)
 
             model = find_model(url)
 
@@ -150,27 +155,22 @@ class Automnation:
                     cookie = {
                         'name': cookie.get('name'), 
                         'value': cookie.get('value')}
-                    self.driver.add_cookie(cookie)
-                self.driver.get(url)
+                    driver.add_cookie(cookie)
+                driver.get(url)
 
             main_sequence = Sequence(
-                driver=self.driver,
+                driver=driver,
                 steps=model.get('steps', {}),
                 source_url=url,
                 item=model.get('fields', Item)(),
                 automnation_id=self.automnation.get('_id') if self.automnation is not None else '',
             )
-            main_sequence.play()
-            # thread = threading.Thread(target=main_sequence.play)
-            # thread.start()
-            # threads.append(thread)
-        
-        # for thread in threads:
-        #     thread.start()
+            thread = threading.Thread(target=main_sequence.play)
+            thread.start()
 
         print(Style.RESET_ALL)
 
-        tzprint(self.chrono.end(), self.depth)
+        # tzprint(self.chrono.end(), self.depth)
 
         if self.automnation is not None:
             mongo({

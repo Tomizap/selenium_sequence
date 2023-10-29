@@ -1,18 +1,4 @@
-from pprint import pprint
-import threading
-import time
-
 from selenium_sequence import *
-# from selenium_sequence.main import Automnation
-# from selenium_driver import SeleniumDriver
-# from tzmongo import mongo
-
-
-data = []
-auth = []
-headless = True
-
-# driver = SeleniumDriver(headless=headless)
 
 # ------------- INPUTS -------------
 
@@ -79,42 +65,33 @@ job_marketing_urls = [
 ]
 
 sport_idf = [
-  # f"https://www.google.com/maps/search/coach+sportif/@48.8690837,2.4955362,12.72z/data=!3m1!4b1?entry=ttu",
-  # f"https://www.google.com/maps/search/salle+de+sport/@48.8690837,2.4955362,12.72z/data=!3m1!4b1?entry=ttu",
-  f"https://www.google.com/maps/search/salle+de+fitness/@48.8690837,2.4955362,12.72z/data=!3m1!4b1?entry=ttu",
-  f"https://www.google.com/maps/search/salle+de+musculation/@48.8690837,2.4955362,12.72z/data=!3m1!4b1?entry=ttu"
+  f"https://www.google.com/maps/search/coach+sportif/@@48.9958471,2.5505606,10.49z?entry=ttu",
+  f"https://www.google.com/maps/search/salle+de+sport/@@48.9958471,2.5505606,10.49z?entry=ttu",
+  f"https://www.google.com/maps/search/salle+de+fitness/@@48.9958471,2.5505606,10.49z?entry=ttu",
+  f"https://www.google.com/maps/search/salle+de+musculation/@@48.9958471,2.5505606,10.49z?entry=ttu",
+  f"https://www.google.com/maps/search/coach+priv%C3%A9/@@48.9958471,2.5505606,10.49z?entry=ttu",
 ]
 
 secretaire_medical_idf = [
   #  f"https://fr.indeed.com/emplois?q=secr%C3%A9taire+m%C3%A9dical&l=%C3%8Ele-de-France&sc=0kf%3Ajt%28apprenticeship%29%3B&vjk=3c64d91c1a5776c8",
-  #  f"https://candidat.pole-emploi.fr/offres/recherche?lieux=11R&motsCles=secr%C3%A9taire+m%C3%A9dical&natureOffre=E2&offresPartenaires=true&range=0-19&rayon=10&tri=0",
-   f"https://www.hellowork.com/fr-fr/emploi/recherche.html?k=Secr%C3%A9taire+m%C3%A9dical&k_autocomplete=http%3A%2F%2Fwww.rj.com%2FCommun%2FPost%2FSecretaire_medical&l=%C3%8Ele-de-France&l_autocomplete=http%3A%2F%2Fwww.rj.com%2Fcommun%2Flocalite%2Fregion%2F11&ray=50&d=all&c=Alternance&p=1"
+   f"https://candidat.pole-emploi.fr/offres/recherche?lieux=11R&motsCles=secr%C3%A9taire+m%C3%A9dical&natureOffre=E2&offresPartenaires=true&range=0-19&rayon=10&tri=0",
+  #  f"https://www.hellowork.com/fr-fr/emploi/recherche.html?k=Secr%C3%A9taire+m%C3%A9dical&k_autocomplete=http%3A%2F%2Fwww.rj.com%2FCommun%2FPost%2FSecretaire_medical&l=%C3%8Ele-de-France&l_autocomplete=http%3A%2F%2Fwww.rj.com%2Fcommun%2Flocalite%2Fregion%2F11&ray=50&d=all&c=Alternance&p=1"
+  # f"https://labonnealternance.apprentissage.beta.gouv.fr/recherche-apprentissage?&display=list&job_name=Secr%C3%A9tariat%20m%C3%A9dical&romes=J1303,M1609,M1607&radius=60&lat=48.784506&lon=2.452976&zipcode=94000&insee=94028&address=Cr%C3%A9teil%2094000&s=1697759569890"
 ]
 
-# ------------- THREADING -------------
+ecole_com_idf = [
+  # f'https://labonnealternance.apprentissage.beta.gouv.fr/recherche-apprentissage?&display=list&job_name=Administratif%2C%20secr%C3%A9tariat%2C%20assistanat&romes=M1701,M1605,M1608,M1607,M1601,M1602,M1606,M1604&radius=30&lat=48.859&lon=2.347&zipcode=75001&insee=75056&address=Paris&s=1698046308063',
+  # f'https://labonnealternance.apprentissage.beta.gouv.fr/recherche-apprentissage?&display=list&job_name=Marketing%2C%20vente&romes=M1707,M1703,E1401,M1705,E1103&radius=30&lat=48.859&lon=2.347&zipcode=75001&insee=75056&address=Paris&s=1698046075114',
+  # f'https://labonnealternance.apprentissage.beta.gouv.fr/recherche-apprentissage?&display=list&job_name=Management%20commercial%20operationnel&romes=D1501,D1506,M1704,M1705,D1401&radius=30&lat=48.859&lon=2.347&zipcode=75001&insee=75056&address=Paris&s=1698046029970',
+  f'https://labonnealternance.apprentissage.beta.gouv.fr/recherche-apprentissage?&display=list&job_name=Negociation%20et%20digitalisation%20de%20la%20relation%20client&romes=D1406,M1703,D1501,M1704,D1401&radius=60&lat=48.859&lon=2.347&zipcode=75001&insee=75056&address=Paris&s=1698045960192'
+]
 
-# for url in medico_social_idf:
-#   automnation = Automnation(
-#     urls=url, 
-#     # filename=filename,
-#     # auth=auth,
-#     _id='64f91b86bd602b8bd6d2ea76',
-#     headless=headless)
-#   t = threading.Thread(target=automnation.play)
-#   t.start()
+# ------------- RUNNING -------------
 
 automnation = Automnation(
-  urls=medico_social_idf, 
+  urls=sport_idf, 
   # filename=filename,
-  # auth=auth,
-  _id='64f91b86bd602b8bd6d2ea76',
-  headless=headless)
+  _id='6539887fe19d005aed6bd3df',
+  headless=True)
 automnation.play()
-
-# -------------- RESULT --------------
-
-# automnation.play()
-# data = automnation.data
-# pprint(data)
-
-time.sleep(20)
+# print(automnation.data)

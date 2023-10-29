@@ -21,6 +21,9 @@ class Finder:
             phone = phone.split("'")[1]
         phone = phone.replace(r'[\s\.\-]', '')
         return phone
+    
+    def close(self):
+        self.driver.close()
 
     # -------------- GLOBAL -------------------
 

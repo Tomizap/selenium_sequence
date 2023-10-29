@@ -165,18 +165,18 @@ class JobItem(Item):
       "WORKSPACE": "",
       "WORKHOURS": "",
 
-      "INDEED_URL": "",
-      "LINKEDIN_URL": "",
-      "HELLOWORK_URL": "",
-      "WELCOME_TO_THE_JUNLGE_URL": "",
+      # "INDEED_URL": "",
+      # "LINKEDIN_URL": "",
+      # "HELLOWORK_URL": "",
+      # "WELCOME_TO_THE_JUNLGE_URL": "",
     }, prefix=prefix)
     self.set_item(fields=CompanyItem({
-      "HIRING_STATUS": "",
-      "HIRING": "",
-      "JOBS_COUNT": "",
-      "HIRING_TIME": ""
+      # "HIRING_STATUS": "",
+      # "HIRING": "",
+      # "JOBS_COUNT": "",
+      # "HIRING_TIME": ""
     }).__dict__)
-    self.set_item(fields=PeopleItem().__dict__, prefix='RECRUITER')
+    # self.set_item(fields=PeopleItem().__dict__, prefix='RECRUITER')
 
     self.set_item(fields=fields, prefix=prefix)
 

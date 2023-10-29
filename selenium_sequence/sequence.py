@@ -1,3 +1,4 @@
+# from genericpath import samefile
 from pprint import pprint
 import re
 import time
@@ -15,7 +16,7 @@ from selenium_sequence.models import find_model
 
 class Sequence:
   
-  def __init__(self, driver=None, model={}, steps=None, source_url="", data=[], item=None, automnation_id=None) -> None:
+  def __init__(self, driver=None, model={}, steps=None, source_url="", data=None, item=None, automnation_id=None) -> None:
     print('init Sequence')
     
     self.source_url = source_url
@@ -27,7 +28,7 @@ class Sequence:
     self.automnation_id = automnation_id
     self.item = item if item is not None else find_model(url=source_url).get('fields', Item)()
     # pprint(item.__dict__)
-    self.data = data
+    self.data = data if type(data) == list else self.get_data()
 
   def update_item(self, name, value):
       self.item.__setattr__(name, value)
@@ -45,27 +46,21 @@ class Sequence:
       
       return []
 
-  def add_item(self, item={}):
-      # print('adding item to data')
+  def item_exist(self, string=None) -> bool:
+      if string is not None:
+          if string in str(self.data):
+              return True
 
-      # if self.filename is not None:
-      #     add_data_to_csv(data=[item], filename=self.filename)
-          # add_data_to_json(data=[item], filename=self.filename)
-
-      item_exist = False
-      data = self.get_data()
-      # print(data)
+      item = self.item.__dict__    
       for key in item:
           if 'EMAIL' in key or 'PHONE' in key:
-              if item[key] != '' and item[key] in str(data):
-                  # print(Fore.WHITE + f"data: {self.data}")
-                  # print(Fore.WHITE + f"item[key]: {item[key]}")
-                  item_exist = True
-                  # item_exist_dict = item
-                  break
+              if item[key] != '' and item[key] in str(self.data):
+                  return True
+      return False
 
-      if item_exist:
-          # print(Fore.WHITE + f"data: {self.data}")
+  def add_item(self, item={}):
+
+      if self.item_exist():
           print(Fore.RED + f"item already exist")
           print(Style.RESET_ALL)
           return
@@ -83,15 +78,16 @@ class Sequence:
                   }
               }
           })
-          # print(adding)
+        #   print("adding")
+        #   print(adding)
 
           if adding.get('ok', False) is False:
               print(Fore.RED + str(adding.get('message')))
-          # else:
-          #     print(f"item successfully added to mongo")
+          else:
+              print(Fore.GREEN + f"item successfully added to mongo")
           print(Style.RESET_ALL)
 
-      # self.data.append(item)
+      self.data.append(item)
 
   # -------------- INTERACTIONS ------------------
 
@@ -101,293 +97,324 @@ class Sequence:
 
     for step in sequence:
                 
-      print(Fore.WHITE + 'step: ' + str(step))
-      value = sequence[step]
-      
-      # ---------------- ACTION ---------------------
+        print(Fore.WHITE + 'step: ' + str(step))
+        value = sequence[step]
 
-      if ':click' in step:
-          if type(value) == str:
-              self.driver.click(value)
-          elif type(value) == list:
-              for e in value:
-                  self.driver.click(e)
-          continue
+        if self.item_exist():
+            # print(Fore.WHITE + f"data: {self.data}")
+            print(Fore.RED + f"item already exist")
+            print(Style.RESET_ALL)
+            break
 
-      elif ":execute_script" in step:
-          if type(value) == str:
-              self.driver.execute_script(value)
-          elif type(value) == list:
-              for script in value:
-                  self.driver.execute_script(script)
-          continue
+        try:
+        
+            # ---------------- ACTION ---------------------
 
-      elif ":wait" in step:
-          time.sleep(value)
-          continue
+            if ':click' in step:
+                if type(value) == str:
+                    self.driver.click(value)
+                elif type(value) == list:
+                    for e in value:
+                        self.driver.click(e)
+                continue
 
-      elif ":goto" in step:
+            elif ":execute_script" in step:
+                if type(value) == str:
+                    self.driver.execute_script(value)
+                elif type(value) == list:
+                    for script in value:
+                        self.driver.execute_script(script)
+                continue
 
-          if ":original_url" in value:
-              # print(Fore.WHITE + 'go back to original_url')
-              self.driver.get(original_url)
-              continue
+            elif ":wait" in step:
+                time.sleep(value)
+                continue
 
-          url = ""
+            elif ":goto" in step:
 
-          if type(value) == str:
-              if "http" in value:
-                  url = value
-              else:
-                  url = get_element_data(
-                      driver=self.driver,
-                      selector=value, prop="href")
-                  
-          elif type(value) == dict:
-              url = get_element_data(
-                  driver=self.driver,
-                  selector=value['selector'],
-                  prop=value['property'])
-              
-          if url.strip() != "" and url is not None:
-              self.driver.get(url.strip())
-              if '404' in self.driver.current_url() or 'unavailable' in self.driver.current_url():
-                  print(Fore.RED + 'error')
-                  print(Style.RESET_ALL)
-                  self.driver.get(
-                      "/".join(self.driver.current_url().split('/')[:3]))
-                  self.driver.get(url.strip())
+                if ":original_url" in value:
+                    # print(Fore.WHITE + 'go back to original_url')
+                    self.driver.get(original_url)
+                    continue
 
-          continue
+                url = ""
 
-      # elif ':sequence' in step:
-      #     seq = Automnation(
-      #         driver=self.driver, 
-      #         item=self.item, 
-      #         data=[], 
-      #         sequence=value,
-      #         depth= self.depth + 1)
-      #     seq.play()
-      #     if len(seq.data) == 1:
-      #         for prop in seq.data[0]:
-      #             if self.item.get(prop) is not None:
-      #                 self.item.__setattr__(prop, seq.data[0][prop])
-      #                 # self.item[prop] = seq.data[0][prop]
-      #     continue
-          
+                if type(value) == str:
+                    if "http" in value:
+                        url = value
+                    else:
+                        url = get_element_data(
+                            driver=self.driver,
+                            selector=value, prop="href")
+                        
+                elif type(value) == dict:
+                    url = get_element_data(
+                        driver=self.driver,
+                        selector=value['selector'],
+                        prop=value['property'])
+                    
+                if url.strip() != "" and url is not None:
+                    self.driver.get(url.strip())
+                    if '404' in self.driver.current_url() or 'unavailable' in self.driver.current_url():
+                        print(Fore.RED + 'error')
+                        print(Style.RESET_ALL)
+                        self.driver.get(
+                            "/".join(self.driver.current_url().split('/')[:3]))
+                        self.driver.get(url.strip())
 
-      # ---------------- LOOPING ---------------------
+                continue
 
-      if ':loop' in step:
-          
-          listing = []
-          i_loop = 0
-          pagination = value.get('pagination')
+            elif ':sequence' in step:
+                seq = Sequence(
+                    driver=self.driver, 
+                    item=self.item,
+                    steps=value,
+                    data=[])
+                seq.play()
+                if len(seq.data) == 1:
+                    for prop in seq.data[0]:
+                        if self.item.get(prop) is not None:
+                            self.item.__setattr__(prop, seq.data[0][prop])
+                            # self.item[prop] = seq.data[0][prop]
+                continue
+                
 
-          page = 99
-          if type(value.get('page')) is str:
-              page = int(get_element_data(self.driver, value.get('page')))
-          elif type(value.get('page')) is int:
-              page = value.get('page')
-          # print(f"page: {page}")
+            # ---------------- LOOPING ---------------------
 
-          if not self.driver.is_attached(str(pagination)):
-              for _ in range(5):
-                  if not self.driver.is_attached(str(pagination)):
-                      time.sleep(1)
-              print(Fore.RED + 'pagination is not attached')
-              print(Style.RESET_ALL)
-              continue
+            if ':loop' in step:
+                
+                listing = []
+                pagination = value.get('pagination', value.get('pagination:not'))
+                i_loop = 0
 
-          while i_loop < page and self.driver.is_attached(str(pagination)):
-              i_loop = i_loop + 1
+                page = 99
+                if type(value.get('page')) is str:
+                    page = int(get_element_data(self.driver, value.get('page')))
+                elif type(value.get('page')) is int:
+                    page = value.get('page')
 
-              print(f'page: {i_loop}/{page}')
-              if not self.driver.is_attached(str(pagination)):
-                  # print('pagination is not attached')
-                  for _ in range(5):
-                      if not self.driver.is_attached(str(pagination)):
-                          time.sleep(1)
-                  print(Fore.RED + 'pagination is not attached')
-                  print(Style.RESET_ALL)
-              
-              listing_sequence = Sequence(
-                  item=self.item,
-                  driver=self.driver,
-                  automnation_id=self.automnation_id,
-                  steps=value['listing'])
-              listing_sequence.play()
-              
-              if value.get('replace') == True:
-                  listing = listing_sequence.data.copy()
-              else:
-                  for data_url in listing_sequence.data:
-                      if data_url not in listing:
-                          listing.append(data_url)
-              
-              self.driver.click(value['pagination'])
+                if not self.driver.is_attached(str(pagination)) and "pagination:not" not in str(value):
+                    for _ in range(5):
+                        if not self.driver.is_attached(str(pagination)):
+                            time.sleep(1)
+                    print(Fore.RED + 'pagination is not attached')
+                    print(Style.RESET_ALL)
+                    continue
 
-              print(Fore.GREEN + f'+{len(listing_sequence.data)} urls of {len(listing)} to scrap')
-              # print(Fore.WHITE + f'TOTAL: {len(listing)}')
+                same_retry = 0
+                while i_loop < page and (not self.driver.is_attached(str(pagination)) if "pagination:not" in str(value) else self.driver.is_attached(str(pagination))):
+                    i_loop = i_loop + 1
+                    print(f'page: {i_loop}/{page}')
+                    
+                    listing_sequence = Sequence(
+                        item=self.item,
+                        driver=self.driver,
+                        automnation_id=self.automnation_id,
+                        data=[],
+                        steps=value['listing'])
+                    listing_sequence.play()
 
-          # print(Fore.GREEN + f"listing ended: {str(len(listing))} urls founded")
-          print(Style.RESET_ALL)
+                    # pprint(listing_sequence.data.copy())
+                    old_listing = listing
 
-          # for i in range(len(listing)):
-          #     listing[i] = str(listing[i]).split('?')[0]
-              
-          if value.get('deep') is False:
-              self.data = listing
-              continue
+                    if value.get('replace') == True:
+                        listing = listing_sequence.data.copy()
+                    else:
+                        for listing_url in listing_sequence.data.copy():
+                            if listing_url not in listing and listing_url not in str(self.data):
+                                listing.append(listing_url)
+                            else:
+                                print(Fore.RED + f"item already exist")
+                                print(Style.RESET_ALL) 
 
-          for u in range(len(listing)):
-              
-              url = listing[u]
+                    if len(old_listing) == len(listing):
+                        same_retry = same_retry + 1
+                        if same_retry == 5:
+                            print(Fore.RED + "breaking listing because: to much same_retry")
+                            print(Style.RESET_ALL)
+                            break
+                    else:
+                        same_retry = 0
 
-              # print(listing)
-              # print(url)
+                    print(Fore.GREEN + f'+{len(listing_sequence.data)} urls of {len(listing)} to scrap')
 
-              if url in str(self.get_data()):
-                  print(Fore.RED + f"item already exist")
-                  print(Style.RESET_ALL)
-                  continue
+                    if "pagination:not" not in str(value):
+                        if not self.driver.is_attached(str(pagination)):
+                            for _ in range(5):
+                                if not self.driver.is_attached(str(pagination)):
+                                    time.sleep(1)
+                            print(Fore.RED + 'pagination is not attached')
+                            print(Style.RESET_ALL)
+                        if page != 1:
+                            self.driver.click(value.get('pagination', 'body'))
 
-              if type(url) == str:
+                    print(Fore.WHITE + f'TOTAL: {len(listing)}')
 
-                  self.driver.get(url)
-                  time.sleep(1)
-                  url = self.driver.current_url()
+                print(Fore.GREEN + f"listing ended: {str(len(listing))} urls founded")
+                print(Style.RESET_ALL)
+                    
+                if value.get('deep') is False:
+                    self.data = listing
+                    continue
 
-                  for attr in self.item.__dict__:
-                      self.update_item(attr, "")
-                      
-                  loop_sequence = Sequence(
-                      source_url=url,
-                      driver=self.driver, 
-                      item=self.item,
-                      automnation_id=self.automnation_id)
-                  loop_sequence.play()
-                  
-                  loop_sequence.update_item("SOURCE_URL", url)
-                  item = loop_sequence.item.__dict__
+                for u in range(len(listing)):
+                    
+                    url = listing[u]
 
-                  pprint(item)
-                  print(Fore.GREEN + f"+1 item scrapped ({u + 1}/{len(listing)})")
-                  print(Style.RESET_ALL)
-                  
-                  self.add_item(item)
+                    if self.item_exist(string=url):
+                        print(Fore.RED + f"item already exist")
+                        print(Style.RESET_ALL)
+                        continue
 
-              print(Style.RESET_ALL)
-              
-          print(Style.RESET_ALL)
-          continue
-          
-      # ---------------- GET DATA ---------------------
+                    if type(url) == str:
 
-      step_property = str(step).split(':')[0]
+                        self.driver.get(url)
+                        time.sleep(1)
+                        # url = self.driver.current_url()
 
-      if step_property != '':
-          if self.item.get(step_property) is None:
-              print(Fore.RED + f'{step_property} is an incorrect attribute')
-              continue
-          elif self.item.get(step_property) != '':
-              print(Fore.RED + f'property {step_property} is already set')
-              continue
+                        for attr in self.item.__dict__:
+                            self.update_item(attr, "")
+                        
+                        # print(url)
+                        # pprint(find_model(url=f"{url}").get('steps', {}))                   
+                    
+                        loop_sequence = Sequence(
+                            source_url=url,
+                            driver=self.driver, 
+                            # item=self.item,
+                            steps=find_model(url=url).get('steps', {}),
+                            automnation_id=self.automnation_id)
+                        loop_sequence.play()
+                        
+                        loop_sequence.update_item("SOURCE_URL", url)
+                        item = loop_sequence.item.__dict__
 
-      if ":find" in step:
-          result = ''
+                        pprint(item)
+                        print(Fore.GREEN + f"+1 item scrapped ({u + 1}/{len(listing)})")
+                        print(Style.RESET_ALL)
+                        
+                        self.add_item(item)
 
-          if type(value) == dict:
+                    print(Style.RESET_ALL)
+                    
+                print(Style.RESET_ALL)
+                continue
+                
+            # ---------------- GET DATA ---------------------
 
-              name = self.item.get('COMPANY_NAME')
-              if value.get('name') is not None:
-                  name = get_element_data(driver=self.driver, selector=value.get('name'))
-              # print(name)
+            step_property = str(step).split(':')[0]
 
-              location = self.item.get('COMPANY_LOCATION')
-              if value.get('location') is not None:
-                  location = get_element_data(driver=self.driver, selector=value.get('location'))
-              # print(location)
+            if step_property != '':
+                if self.item.get(step_property) is None:
+                    print(Fore.RED + f'{step_property} is an incorrect attribute')
+                    continue
+                elif self.item.get(step_property) != '':
+                    print(Fore.RED + f'property {step_property} is already set')
+                    continue
 
-              finder = Finder(
-                  driver=self.driver,
-                  name=name,
-                  location=location,
-              )
+            if ":find" in step:
+                result = ''
 
-              # if ":contact" in step:
-              #     result = str(finder.email())
-              #     result = str(finder.phone())
-              #     result = str(finder.website())
-              #     result = str(finder.linkedin())
-              #     result = str(finder.indeed())
-              #     result = str(finder.facebook())
-              #     result = str(finder.youtube())
+                if type(value) == dict:
 
-              if ":email" in step:
-                  result = str(finder.email())
-              elif ":phone" in step:
-                  result = str(finder.phone())
-              elif ':website' in step:
-                  result = str(finder.website())
-              # elif ':linkedin' in step:
-              #     result = str(finder.linkedin())
-              # elif ':indeed' in step:
-              #     result = str(finder.indeed())
-              # elif ':facebook' in step:
-              #     result = str(finder.facebook())
-              # elif ':facebook' in step:
-              #     result = str(finder.youtube())
-              else:
-                  continue
+                    name = self.item.get('COMPANY_NAME')
+                    if value.get('name') is not None:
+                        name = get_element_data(driver=self.driver, selector=value.get('name'))
+                    # print(name)
 
-              self.update_item(step_property, result)
+                    location = self.item.get('COMPANY_LOCATION')
+                    if value.get('location') is not None:
+                        location = get_element_data(driver=self.driver, selector=value.get('location'))
+                    # print(location)
 
-          self.driver.get(original_url)
+                    finder = Finder(
+                        driver=self.driver,
+                        name=name,
+                        location=location,
+                    )
 
-      elif ':get' in step:
+                    # if ":contact" in step:
+                    #     result = str(finder.email())
+                    #     result = str(finder.phone())
+                    #     result = str(finder.website())
+                    #     result = str(finder.linkedin())
+                    #     result = str(finder.indeed())
+                    #     result = str(finder.facebook())
+                    #     result = str(finder.youtube())
 
-          if step_property == "":
-              if ":all" in step:
-                  v = {}
-                  if type(value) == str:
-                      v = get_elements_data(
-                          driver=self.driver, selector=value, prop="innerText")
-                  elif type(value) == dict:
-                      v = get_elements_data(
-                          driver=self.driver,
-                          selector=value['selector'],
-                          prop=value['property'])
-                      
-                  self.data.extend(v.copy())
-                  continue
-              else:
-                  print(Fore.RED + 'Nothing to get all')
+                    if ":email" in step:
+                        result = str(finder.email())
+                    elif ":phone" in step:
+                        result = str(finder.phone())
+                    elif ':website' in step:
+                        result = str(finder.website())
+                    # elif ':linkedin' in step:
+                    #     result = str(finder.linkedin())
+                    # elif ':indeed' in step:
+                    #     result = str(finder.indeed())
+                    # elif ':facebook' in step:
+                    #     result = str(finder.facebook())
+                    # elif ':facebook' in step:
+                    #     result = str(finder.youtube())
+                    
+                    else:
+                        continue
 
-          else:
+                    self.update_item(step_property, result)
 
-              if ":current_url" in step:
-                  self.update_item(
-                      step_property, 
-                      self.driver.current_url())
-                  continue
+                    finder.close()
 
-              if type(value) == str:
-                  self.update_item(
-                      step_property, 
-                      get_element_data(driver=self.driver, selector=value, prop="innerText"))
-                  
-              elif type(value) == dict or value.get('selector') is not None:
-                  self.update_item(step_property, get_element_data(
-                      driver=self.driver,
-                      selector=value.get('selector'),
-                      prop=value.get('property') if value.get('property') is not None else 'innerText'))
-                  if value.get('replace') == str:
-                      self.update_item(
-                          step_property, 
-                          re.sub(value.get('replace', ''), '', self.item.__getattribute__(step_property)))
-                  # print(Fore.GREEN + self.item.__getattribute__(step_property))
-              else:
-                  print(Fore.RED + 'Nothing to get')
+            #   self.driver.get(self.source_url)
+
+            elif ':get' in step:
+
+                if step_property == "":
+                    if ":all" in step:
+                        # print(':all')
+                        # pprint(value)
+                        v = {}
+                        if type(value) == str:
+                            v = get_elements_data(
+                                driver=self.driver, selector=value, prop="innerText")
+                        elif type(value) == dict:
+                            v = get_elements_data(
+                                driver=self.driver,
+                                selector=value['selector'],
+                                prop=value['property'])
+                        
+                        # print("v.copy()", type(v.copy()), v.copy())
+                        self.data.extend(v.copy())
+                        continue
+                    else:
+                        print(Fore.RED + 'Nothing to get all')
+
+                else:
+
+                    if ":current_url" in step:
+                        self.update_item(
+                            step_property, 
+                            self.driver.current_url())
+                        continue
+
+                    if type(value) == str:
+                        self.update_item(
+                            step_property, 
+                            get_element_data(driver=self.driver, selector=value, prop="innerText"))
+                        
+                    elif type(value) == dict or value.get('selector') is not None:
+                        self.update_item(step_property, get_element_data(
+                            driver=self.driver,
+                            selector=value.get('selector'),
+                            prop=value.get('property') if value.get('property') is not None else 'innerText'))
+                        if value.get('replace') == str:
+                            self.update_item(
+                                step_property, 
+                                re.sub(value.get('replace', ''), '', self.item.__getattribute__(step_property)))
+                        # print(Fore.GREEN + self.item.__getattribute__(step_property))
+                    else:
+                        print(Fore.RED + 'Nothing to get')
+
+        except Exception as e:
+            print(Fore.RED + f"Error in {str(step)}: {str(e)}")
 
     print(Style.RESET_ALL)

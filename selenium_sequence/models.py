@@ -4,7 +4,7 @@ import re
 from colorama import Fore, Style
 from pprint import pprint
 
-from .items import *
+from selenium_sequence.items import *
 
 
 def rand():
@@ -213,12 +213,14 @@ sequences = {
     },
     "labonnealternance": {
         "JOBS": {
-            "JOB_NAME": "h1",
-            "JOB_LOCATION": "#itemDetailColumn > header div.css-acwv4d",
-            "JOB_DESCRIPTION": "#itemDetailColumn div.css-2qrmgs",
-            "JOB_TYPE": "#itemDetailColumn div.css-rz1orx > div:nth-child(1)",
-            "JOB_TIME": "#itemDetailColumn div.css-rz1orx > div:nth-child(2)",
-            "JOB_WORKTIME": "#itemDetailColumn div.css-rz1orx > div:nth-child(4)",
+            "JOB_NAME:get": "#itemDetailColumn h1",
+            "JOB_LOCATION:get": "#itemDetailColumn > header div.css-acwv4d",
+            "JOB_DESCRIPTION:get": "#itemDetailColumn div.css-2qrmgs",
+            "JOB_TYPE:get": "#itemDetailColumn div.css-rz1orx > div:nth-child(1)",
+            "JOB_TIME:get": "#itemDetailColumn div.css-rz1orx > div:nth-child(2)",
+            "JOB_WORKTIME:get": "#itemDetailColumn div.css-rz1orx > div:nth-child(4)",
+        },
+        "COMPANY": {
             "COMPANY_PHONE:find:phone": {},
             "COMPANY_EMAIL:find:email": {},
             "COMPANY_WEBSITE_URL:find:website": {},
@@ -517,9 +519,9 @@ all_models = [
         "steps": {
             "COMPANY_NAME:get": '[data-testid="inlineHeader-companyName"]',
             "COMPANY_LOCATION:get": '[data-testid="inlineHeader-companyLocation"]',
-            ':sequence_hdsui765': sequences["indeed"]['JOBS'],
+            ':sequence_job': sequences["indeed"]['JOBS'],
             ":goto": '[data-testid="inlineHeader-companyName"] a',
-            ":sequence": sequences['indeed']['COMPANY'],
+            ":sequence_company": sequences['indeed']['COMPANY'],
         }
     },
     {
@@ -586,11 +588,13 @@ all_models = [
         "require_auth": False,
         "fields": JobItem,
         "action": "scrapping",
-        "RegexUrl": ["page=fiche"],
+        "RegexUrl": ["page=", "type=lba"],
         "steps": {
+            ":wait": 5,
             "COMPANY_NAME:get": '#itemDetailColumn > header > div > p > span.chakra-text',
             "COMPANY_LOCATION:get": '#itemDetailColumn > header > div > div.css-acwv4d',    
-            ":sequence_dsbuh": sequences['labonnealternance']['JOBS'],
+            ":sequence_job": sequences['labonnealternance']['JOBS'],
+            ":sequence_company": sequences['labonnealternance']['COMPANY'],
         }
     },
     {
@@ -601,6 +605,9 @@ all_models = [
         "action": "scrapping",
         "RegexUrl": ["/recherche-apprentissage"],
         "steps": {
+            ":click1": "div.css-1161qt5 > div > div > div > label:nth-child(2) > span.chakra-checkbox__control.css-ildapo",
+            ":click2": "div.css-1161qt5 > div > div > div > label:nth-child(3) > span.chakra-checkbox__control.css-ildapo",
+            ":wait": 60,
             ":loop": {
                 "page": 1,
                 "pagination": "body",
@@ -646,11 +653,11 @@ all_models = [
         "RegexUrl": ['/maps'],
         "steps": {
             ":loop": {
-                # "page": 1,
-                "pagination": 'body',
+                "page": 50,
+                "pagination:not": '[role="feed"] > div.m6QErb.tLjsW',
                 "replace": True,
                 "listing": {
-                    ':wait': 2,
+                    ':wait': 1,
                     ":execute_script": 'document.querySelector("#QA0Szd > div > div > div.w6VYqd > div:nth-child(2) > div > div.e07Vkf.kA9KIf > div > div > div.m6QErb.DxyBCb.kA9KIf.dS8AEf.ecceSd > div.m6QErb.DxyBCb.kA9KIf.dS8AEf.ecceSd").scroll(0, 999999999)',
                     # ":click_fd": "button#tarteaucitronPersonalize2",
                     ":get:all": {"property": "href", "selector": 'a.hfpxzc'}
@@ -783,3 +790,7 @@ def find_model(url=None, action=None) -> dict:
         "message": 'No model found',
         "steps": {}
     }
+
+
+
+# pprint(find_model(url=f"https://labonnealternance.apprentissage.beta.gouv.fr/recherche-apprentissage?display=list&page=fiche&type=matcha&itemId=6511781e6bcb57308f5d223f&job_name=Secr%C3%A9tariat%20m%C3%A9dical&romes=J1303,M1609,M1607&radius=60&lat=48.784506&lon=2.452976&zipcode=94000&insee=94028&address=Cr%C3%A9teil%2094000 "))
