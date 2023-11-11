@@ -4,7 +4,7 @@ from selenium_sequence import Automnation, find_model
 app = Flask(__name__)
 
 
-@app.route('/model', methods=['POST'])
+@app.route('/model', methods=['POST', "GET"])
 def get_url_model():
     url = request.json.get('url')
     return find_model(url=url)

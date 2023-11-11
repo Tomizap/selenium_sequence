@@ -216,27 +216,32 @@ class Sequence:
 
                     # pprint(listing_sequence.data.copy())
                     old_listing = listing
+                    url_added = 0
 
                     if value.get('replace') == True:
                         listing = listing_sequence.data.copy()
+                        if len(old_listing) == len(listing):
+                            print(Fore.RED + "no url added to listing")
+                            same_retry = same_retry + 1
+                            if same_retry == 5:
+                                print(Fore.RED + "breaking listing because: to much same_retry")
+                                print(Style.RESET_ALL)
+                                break
+                        else:
+                            same_retry = 0
+                            url_added = len(listing) - len(old_listing)
+
                     else:
                         for listing_url in listing_sequence.data.copy():
                             if listing_url not in listing and listing_url not in str(self.data):
                                 listing.append(listing_url)
+                                url_added = url_added + 1
                             else:
                                 print(Fore.RED + f"item already exist")
                                 print(Style.RESET_ALL) 
 
-                    if len(old_listing) == len(listing):
-                        same_retry = same_retry + 1
-                        if same_retry == 5:
-                            print(Fore.RED + "breaking listing because: to much same_retry")
-                            print(Style.RESET_ALL)
-                            break
-                    else:
-                        same_retry = 0
-
-                    print(Fore.GREEN + f'+{len(listing_sequence.data)} urls of {len(listing)} to scrap')
+                    print(Fore.GREEN + f'+{url_added} urls of {len(listing)} to scrap')
+                    print(Style.RESET_ALL)
 
                     if "pagination:not" not in str(value):
                         if not self.driver.is_attached(str(pagination)):
@@ -247,8 +252,6 @@ class Sequence:
                             print(Style.RESET_ALL)
                         if page != 1:
                             self.driver.click(value.get('pagination', 'body'))
-
-                    print(Fore.WHITE + f'TOTAL: {len(listing)}')
 
                 print(Fore.GREEN + f"listing ended: {str(len(listing))} urls founded")
                 print(Style.RESET_ALL)
@@ -317,18 +320,19 @@ class Sequence:
 
                 if type(value) == dict:
 
+                    website = self.item.get('COMPANY_WEBSITE_URL')
+                    if value.get('website') is not None:
+                        website = get_element_data(driver=self.driver, selector=value.get('website'))
+
                     name = self.item.get('COMPANY_NAME')
                     if value.get('name') is not None:
                         name = get_element_data(driver=self.driver, selector=value.get('name'))
-                    # print(name)
 
                     location = self.item.get('COMPANY_LOCATION')
                     if value.get('location') is not None:
                         location = get_element_data(driver=self.driver, selector=value.get('location'))
-                    # print(location)
 
                     finder = Finder(
-                        driver=self.driver,
                         name=name,
                         location=location,
                     )
@@ -341,6 +345,8 @@ class Sequence:
                     #     result = str(finder.indeed())
                     #     result = str(finder.facebook())
                     #     result = str(finder.youtube())
+
+                    #     self.update_item(name=value.get('prefix', "") + "EMAIL", value=str(finder.email()))
 
                     if ":email" in step:
                         result = str(finder.email())

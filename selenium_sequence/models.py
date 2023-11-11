@@ -52,9 +52,6 @@ sequences = {
             "COMPANY_EMAIL:find:email": {},
             "COMPANY_WEBSITE_URL:find:website": {},
             "COMPANY_LINKEDIN_URL:find:linkedin": {},
-            "COMPANY_INDEED_URL:find:indeed": {},
-            "COMPANY_FACEBOOK_URL:find:facebook": {},
-            "COMPANY_YOUTUBE_URL:find:youtube": {},
         },
     },
     "linkedin": {
@@ -71,9 +68,6 @@ sequences = {
             "COMPANY_EMPLOYEES_COUNT:get": ".org-top-card-summary-info-list > .inline-block > div + div",
             "COMPANY_WEBSITE_URL:find:website": {},
             "COMPANY_LINKEDIN_URL:find:linkedin": {},
-            "COMPANY_INDEED_URL:find:indeed": {},
-            "COMPANY_FACEBOOK_URL:find:facebook": {},
-            "COMPANY_YOUTUBE_URL:find:youtube": {},
         },
         "JOB": {
             ":click_dgsuyd87": ".artdeco-global-alert__body button",
@@ -137,9 +131,6 @@ sequences = {
             "COMPANY_PHONE:find:phone": {},
             "COMPANY_WEBSITE_URL:find:website": {},
             "COMPANY_LINKEDIN_URL:find:linkedin": {},
-            "COMPANY_INDEED_URL:find:indeed": {},
-            "COMPANY_FACEBOOK_URL:find:facebook": {},
-            "COMPANY_YOUTUBE_URL:find:youtube": {},
         }
     },
     "hellowork": {
@@ -170,9 +161,6 @@ sequences = {
             "COMPANY_EMAIL:find:email": {},
             "COMPANY_WEBSITE_URL:find:website": {},
             "COMPANY_LINKEDIN_URL:find:linkedin": {},
-            "COMPANY_INDEED_URL:find:indeed": {},
-            "COMPANY_FACEBOOK_URL:find:facebook": {},
-            "COMPANY_YOUTUBE_URL:find:youtube": {},
         }
     },
     'lefigaro': {
@@ -225,9 +213,6 @@ sequences = {
             "COMPANY_EMAIL:find:email": {},
             "COMPANY_WEBSITE_URL:find:website": {},
             "COMPANY_LINKEDIN_URL:find:linkedin": {},
-            "COMPANY_INDEED_URL:find:indeed": {},
-            "COMPANY_FACEBOOK_URL:find:facebook": {},
-            "COMPANY_YOUTUBE_URL:find:youtube": {},
         }
     }
 }
@@ -493,7 +478,7 @@ all_models = [
         "require_auth": False,
         "fields": JobItem,
         "action": "scrapping", 
-        "RegexUrl": ["/jobs", "/emplois"],
+        "RegexUrl": ["indeed.com/jobs", "indeed.com/emplois"],
         "steps": {
             ":loop": {
                 # "page": 1,
@@ -515,7 +500,7 @@ all_models = [
         "require_auth": False,
         "fields": JobItem,
         "action": "scrapping", 
-        "RegexUrl": ["/viewjob", '/job/', "/pagead/clk", "/rc/clk", "/company/"],
+        "RegexUrl": ["/viewjob", '/job/', "/pagead/clk", "/rc/clk", "/company/", "/jobs/"],
         "steps": {
             "COMPANY_NAME:get": '[data-testid="inlineHeader-companyName"]',
             "COMPANY_LOCATION:get": '[data-testid="inlineHeader-companyLocation"]',
@@ -639,9 +624,6 @@ all_models = [
             "COMPANY_EMAIL:find:email": {},
             "COMPANY_WEBSITE_URL:find:website": {},
             "COMPANY_LINKEDIN_URL:find:linkedin": {},
-            "COMPANY_INDEED_URL:find:indeed": {},
-            "COMPANY_FACEBOOK_URL:find:facebook": {},
-            "COMPANY_YOUTUBE_URL:find:youtube": {},
         }
     },
     {

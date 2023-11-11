@@ -7,20 +7,28 @@ from selenium.webdriver.common.keys import Keys
 from selenium_driver import SeleniumDriver
 
 
+def clear_phone(phone='') -> str:
+    phone = str(phone)
+    if "'" in phone:
+        phone = phone.split("'")[1]
+    phone = phone.replace(r'[\s\.\-]', '')
+    return phone
+
+def clear_domain(domain='') -> str:
+    domain = domain.replace(r'(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)', '')
+    return domain
+
+def clear_email(email) -> str:
+    return email
+
+
 class Finder:
-    def __init__(self, driver=None, name=None, location=None) -> None:
+    def __init__(self, name=None, location=None) -> None:
         print(Fore.WHITE + 'Finder')
 
         self.driver = SeleniumDriver()
         self.name = name if name is not None else ""
         self.location = location if location is not None else ""
-
-    def clear_phone(self, phone):
-        phone = str(phone)
-        if "'" in phone:
-            phone = phone.split("'")[1]
-        phone = phone.replace(r'[\s\.\-]', '')
-        return phone
     
     def close(self):
         self.driver.close()
@@ -55,14 +63,14 @@ class Finder:
         text = self.driver.find_element("body").get_property('innerText')
         regex = re.findall(regex_exp, text)
         if bool(regex):
-            phone = self.clear_phone(regex[0])
+            phone = clear_phone(regex[0])
             print(Fore.GREEN + f'phone found: {phone}')
             return phone
             
         
         phone = self.google_search(q=f"{self.name} {self.location} contact phone", regex_exp=regex_exp)
         if phone != '':
-            phone = self.clear_phone(phone)
+            phone = clear_phone(phone)
             print(Fore.GREEN + f'phone found: {phone}')
             return phone
 
@@ -71,9 +79,6 @@ class Finder:
         return ''
     
     def website(self) -> str:
-        # self.driver.get('')
-        # if self.name is None or self.name == '':
-        #     return ''
         w = self.google_search(
             q=f"intext:{self.name}",
             css_selector='#rso a')
@@ -83,9 +88,7 @@ class Finder:
         self.w = w
         return w
     
-    def indeed(self, regex_url=[
-        "indeed.com/cmp/",
-    ], prefix="") -> str:
+    def indeed(self, regex_url=["indeed.com/cmp/",], prefix="") -> str:
         # if self.name is None or self.name == '':
         #     return ''
         url = self.google_search(
@@ -99,10 +102,7 @@ class Finder:
         print(Style.RESET_ALL)
         return ''
         
-    def linkedin(self, regex_url=[
-        "linkedin.com/company/",
-        "linkedin.com/shool/"
-    ], prefix="") -> str:
+    def linkedin(self, regex_url=[r"linkedin.com\/(company|school)\/"], prefix="") -> str:
         url = self.google_search(
             q=f"{prefix} {self.name} @linkedin",
             # regex_exp=r'linkedin\.com\/company\/',
@@ -114,9 +114,7 @@ class Finder:
         print(Style.RESET_ALL)
         return ''
     
-    def facebook(self, regex_url=[
-        "facebook.com/"
-    ], prefix="") -> str: 
+    def facebook(self, regex_url=["facebook.com/"], prefix="") -> str: 
         url = self.google_search(
             q=f"{prefix} {self.name} @facebook",
             # regex_exp=r'facebook\.com/',
@@ -128,9 +126,7 @@ class Finder:
         print(Style.RESET_ALL)
         return ''
     
-    def youtube(self, regex_url=[
-        "youtube.com/@"
-    ], prefix="channel") -> str: 
+    def youtube(self, regex_url=["youtube.com/@"], prefix="channel") -> str: 
         url = self.google_search(
             q=f"{prefix} {self.name} @facebook",
             # regex_exp=r'facebook\.com/',
@@ -142,9 +138,7 @@ class Finder:
         print(Style.RESET_ALL)
         return ''
     
-    def instagram(self, regex_url=[
-        r"instagram.com\/[\w.]+\/\?hl="
-    ], prefix="channel") -> str: 
+    def instagram(self, regex_url=[r"instagram.com\/[\w.]+\/\?hl="], prefix="channel") -> str: 
         url = self.google_search(
             q=f"{prefix} {self.name} @facebook",
             # regex_exp=r'facebook\.com/',
