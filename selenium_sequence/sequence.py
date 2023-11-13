@@ -1,12 +1,9 @@
-# from genericpath import samefile
 from pprint import pprint
 import re
 import time
 from colorama import Fore, Style
 from selenium_driver import SeleniumDriver
-# from selenium_sequence import print
 from tzmongo import mongo
-# from selenium_sequence.automnation import get_automnation
 
 from selenium_sequence.data import get_element_data, get_elements_data
 from selenium_sequence.finder import Finder
@@ -16,7 +13,15 @@ from selenium_sequence.models import find_model
 
 class Sequence:
   
-  def __init__(self, driver=None, model={}, steps=None, source_url="", data=None, item=None, automnation_id=None) -> None:
+  def __init__(self, 
+               driver=None, 
+               model={}, 
+               steps=None, 
+               source_url="", 
+               data=None, 
+               item=None, 
+               automnation_id=None, 
+               storage=None) -> None:
     print('init Sequence')
     
     self.source_url = source_url
@@ -25,26 +30,95 @@ class Sequence:
     if steps is not None:
         self.model['steps'] = steps
     # self.steps = model.get('steps', steps)
-    self.automnation_id = automnation_id
     self.item = item if item is not None else find_model(url=source_url).get('fields', Item)()
     # pprint(item.__dict__)
+    self.automnation_id = automnation_id
+    self.storage = storage
+
     self.data = data if type(data) == list else self.get_data()
 
-  def update_item(self, name, value):
-      self.item.__setattr__(name, value)
+  # -------------- AUTOMNATION ------------------
 
-  def get_data(self):
+  def get_automnation(self) -> dict:
       if self.automnation_id is not None:
-          # ga = get_automnation(_id=self.automnation_id)
+          return {}
+      getting = mongo({
+            "collection": "automnations",
+            "selector": {'_id': self.automnation_id}
+        })
+      if getting.get('ok', False) is True:
+          pprint(getting)
+          return getting.get('data', [{}])[0]
+      else:
+          print('error')
+          return {}
+      
+  def update_automnation(self, setter={}) -> None:
+      mongo({
+          "collection": "automnations",
+          "action": "edit",
+          "selector": {"_id": self.automnation_id},
+          "updator": {
+              '$set': setter
+          }
+      })
+
+  # -------------- STORAGE ------------------
+  
+  def get_data(self) -> list:
+      if self.storage is not None:
           ga = mongo({
-                'collection': 'automnations',
-                "selector": {'_id': self.automnation_id}
+                'collection': 'storages',
+                "selector": {'_id': self.storage}
             })
           if ga['ok'] == True:
               automnation = ga['data'][0]
               return automnation.get('data')
       
       return []
+  
+  def add_data(self, item={}) -> None:
+        
+        if len(item) == 0:
+            print(Fore.RED + 'no item')
+            return
+      
+        if self.item_exist():
+            print(Fore.RED + 'item already exist')
+            return
+        
+        self.data.append(item)
+
+        if self.storage is None:
+            print(Fore.RED + 'no storage')
+            return
+        
+        print('self.storage')
+        print(self.storage)
+        adding = mongo({
+            "collection": "storages",
+            "action": "edit",
+            "selector": {'_id': self.storage},
+            "updator": {
+                "$push": {
+                    "data": item
+                }
+            }
+        })
+        
+        if adding.get('ok', False) is False:
+            print(adding)
+            print(Fore.RED + "MongoError: " + str(adding.get('message')))
+        else:
+            print(Fore.GREEN + f"item successfully added to mongo")
+        print(Style.RESET_ALL)
+
+        
+  
+  # -------------- ITEM ------------------
+
+  def update_item(self, name, value) -> None:
+      self.item.__setattr__(name, value)
 
   def item_exist(self, string=None) -> bool:
       if string is not None:
@@ -58,38 +132,16 @@ class Sequence:
                   return True
       return False
 
-  def add_item(self, item={}):
+#   def add_item(self, item={}) -> None:
+#       if self.item_exist():
+#           print(Fore.RED + f"item already exist")
+#           print(Style.RESET_ALL)
+#           return
 
-      if self.item_exist():
-          print(Fore.RED + f"item already exist")
-          print(Style.RESET_ALL)
-          return
+#       self.add_data(item)
+#       self.data.append(item)
 
-      if self.automnation_id is not None:
-          
-          # print('adding item to mongo')
-          adding = mongo({
-              "collection": "automnations",
-              "selector": {'_id': self.automnation_id},
-              "action": "edit",
-              "updator": {
-                  "$push": {
-                      "data": item
-                  }
-              }
-          })
-        #   print("adding")
-        #   print(adding)
-
-          if adding.get('ok', False) is False:
-              print(Fore.RED + str(adding.get('message')))
-          else:
-              print(Fore.GREEN + f"item successfully added to mongo")
-          print(Style.RESET_ALL)
-
-      self.data.append(item)
-
-  # -------------- INTERACTIONS ------------------
+  # -------------- RUNNING ------------------
 
   def play(self):
     sequence = self.model.get('steps', {})
@@ -177,9 +229,6 @@ class Sequence:
                             self.item.__setattr__(prop, seq.data[0][prop])
                             # self.item[prop] = seq.data[0][prop]
                 continue
-                
-
-            # ---------------- LOOPING ---------------------
 
             if ':loop' in step:
                 
@@ -211,6 +260,7 @@ class Sequence:
                         driver=self.driver,
                         automnation_id=self.automnation_id,
                         data=[],
+                        storage=self.storage,
                         steps=value['listing'])
                     listing_sequence.play()
 
@@ -286,7 +336,8 @@ class Sequence:
                             driver=self.driver, 
                             # item=self.item,
                             steps=find_model(url=url).get('steps', {}),
-                            automnation_id=self.automnation_id)
+                            automnation_id=self.automnation_id,
+                            storage=self.storage)
                         loop_sequence.play()
                         
                         loop_sequence.update_item("SOURCE_URL", url)
@@ -296,7 +347,7 @@ class Sequence:
                         print(Fore.GREEN + f"+1 item scrapped ({u + 1}/{len(listing)})")
                         print(Style.RESET_ALL)
                         
-                        self.add_item(item)
+                        self.add_data(item=item)
 
                     print(Style.RESET_ALL)
                     
@@ -369,8 +420,6 @@ class Sequence:
                     self.update_item(step_property, result)
 
                     finder.close()
-
-            #   self.driver.get(self.source_url)
 
             elif ':get' in step:
 

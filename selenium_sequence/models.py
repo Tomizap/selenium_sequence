@@ -635,7 +635,7 @@ all_models = [
         "RegexUrl": ['/maps'],
         "steps": {
             ":loop": {
-                "page": 50,
+                # "page": 1,
                 "pagination:not": '[role="feed"] > div.m6QErb.tLjsW',
                 "replace": True,
                 "listing": {

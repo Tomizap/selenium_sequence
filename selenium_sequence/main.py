@@ -17,11 +17,9 @@ class Automnation:
 
     def __init__(
             self, 
-            # driver=None, 
             # item=None, 
             depth=0,
             headless=True,
-            filename=None,
             _id=None,
             urls=None, 
             data=[], 
@@ -164,6 +162,7 @@ class Automnation:
                 source_url=url,
                 item=model.get('fields', Item)(),
                 automnation_id=self.automnation.get('_id') if self.automnation is not None else '',
+                storage=self.automnation.get('storage') if self.automnation is not None else ''
             )
             thread = threading.Thread(target=main_sequence.play)
             thread.start()
