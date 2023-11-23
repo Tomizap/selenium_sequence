@@ -22,20 +22,17 @@ class Sequence:
                item=None, 
                automnation_id=None, 
                storage=None) -> None:
-    print('init Sequence')
+    print(Fore.WHITE + 'init Sequence')
     
     self.source_url = source_url
     self.driver = driver if driver is not None else SeleniumDriver()
     self.model = model if len(model) > 0 else find_model(url=source_url)
     if steps is not None:
         self.model['steps'] = steps
-    # self.steps = model.get('steps', steps)
     self.item = item if item is not None else find_model(url=source_url).get('fields', Item)()
-    # pprint(item.__dict__)
     self.automnation_id = automnation_id
-    self.storage = storage
 
-    self.data = data if type(data) == list else self.get_data()
+    self.data = data if type(data) == list else []
 
   # -------------- AUTOMNATION ------------------
 
@@ -54,6 +51,8 @@ class Sequence:
           return {}
       
   def update_automnation(self, setter={}) -> None:
+      if self.automnation_id is None:
+          return
       mongo({
           "collection": "automnations",
           "action": "edit",
@@ -65,85 +64,62 @@ class Sequence:
 
   # -------------- STORAGE ------------------
   
-  def get_data(self) -> list:
-      if self.storage is not None:
-          ga = mongo({
-                'collection': 'storages',
-                "selector": {'_id': self.storage}
-            })
-          if ga['ok'] == True:
-              automnation = ga['data'][0]
-              return automnation.get('data')
-      
-      return []
-  
   def add_data(self, item={}) -> None:
         
         if len(item) == 0:
             print(Fore.RED + 'no item')
             return
       
-        if self.item_exist():
+        if self.item_exist(item=item):
             print(Fore.RED + 'item already exist')
             return
         
-        self.data.append(item)
-
-        if self.storage is None:
-            print(Fore.RED + 'no storage')
-            return
-        
-        print('self.storage')
-        print(self.storage)
         adding = mongo({
-            "collection": "storages",
-            "action": "edit",
-            "selector": {'_id': self.storage},
-            "updator": {
-                "$push": {
-                    "data": item
-                }
-            }
+            'db': "contacts",
+            "collection": "companies",
+            "action": "add",
+            "selector": item
         })
-        
         if adding.get('ok', False) is False:
             print(adding)
             print(Fore.RED + "MongoError: " + str(adding.get('message')))
         else:
             print(Fore.GREEN + f"item successfully added to mongo")
+
         print(Style.RESET_ALL)
 
-        
-  
   # -------------- ITEM ------------------
 
   def update_item(self, name, value) -> None:
       self.item.__setattr__(name, value)
 
-  def item_exist(self, string=None) -> bool:
-      if string is not None:
-          if string in str(self.data):
-              return True
-
-      item = self.item.__dict__    
-      for key in item:
-          if 'EMAIL' in key or 'PHONE' in key:
-              if item[key] != '' and item[key] in str(self.data):
-                  return True
-      return False
-
-#   def add_item(self, item={}) -> None:
-#       if self.item_exist():
-#           print(Fore.RED + f"item already exist")
-#           print(Style.RESET_ALL)
-#           return
-
-#       self.add_data(item)
-#       self.data.append(item)
+  def item_exist(self, item={}) -> bool:
+    # print('item_exist')
+    # item = item.__dict__
+    try:
+        COMPANY_PHONE = item.get('COMPANY_PHONE', '') if item.get('COMPANY_PHONE', '') != '' else 0
+        COMPANY_EMAIL = item.get('COMPANY_EMAIL', '') if item.get('COMPANY_EMAIL', '') != '' else 0
+        SOURCE_URL = item.get('SOURCE_URL', '') if item.get('SOURCE_URL', '') != '' else 0
+        ie = mongo({
+            "db": "contacts",
+            'collection': "companies",
+            'selector': {
+                "$or": [
+                    {"COMPANY_PHONE": COMPANY_PHONE}, 
+                    {"COMPANY_EMAIL": COMPANY_EMAIL}, 
+                    {"SOURCE_URL": SOURCE_URL}, 
+                ]
+            }
+        })
+        return len(list(ie.get('data', []))) > 0
+    except Exception as e:
+        print(str(e))
+        return True
 
   # -------------- RUNNING ------------------
 
   def play(self):
+    print('play sequence')
     sequence = self.model.get('steps', {})
     original_url = self.source_url
 
@@ -152,7 +128,7 @@ class Sequence:
         print(Fore.WHITE + 'step: ' + str(step))
         value = sequence[step]
 
-        if self.item_exist():
+        if self.item_exist(item=self.item.__dict__):
             # print(Fore.WHITE + f"data: {self.data}")
             print(Fore.RED + f"item already exist")
             print(Style.RESET_ALL)
@@ -260,14 +236,12 @@ class Sequence:
                         driver=self.driver,
                         automnation_id=self.automnation_id,
                         data=[],
-                        storage=self.storage,
                         steps=value['listing'])
                     listing_sequence.play()
-
-                    # pprint(listing_sequence.data.copy())
-                    old_listing = listing
+                    
                     url_added = 0
 
+                    old_listing = listing
                     if value.get('replace') == True:
                         listing = listing_sequence.data.copy()
                         if len(old_listing) == len(listing):
@@ -314,7 +288,7 @@ class Sequence:
                     
                     url = listing[u]
 
-                    if self.item_exist(string=url):
+                    if self.item_exist({"SOURCE_URL": url}):
                         print(Fore.RED + f"item already exist")
                         print(Style.RESET_ALL)
                         continue
@@ -323,21 +297,15 @@ class Sequence:
 
                         self.driver.get(url)
                         time.sleep(1)
-                        # url = self.driver.current_url()
 
                         for attr in self.item.__dict__:
-                            self.update_item(attr, "")
-                        
-                        # print(url)
-                        # pprint(find_model(url=f"{url}").get('steps', {}))                   
+                            self.update_item(attr, "")                 
                     
                         loop_sequence = Sequence(
                             source_url=url,
                             driver=self.driver, 
-                            # item=self.item,
                             steps=find_model(url=url).get('steps', {}),
-                            automnation_id=self.automnation_id,
-                            storage=self.storage)
+                            automnation_id=self.automnation_id)
                         loop_sequence.play()
                         
                         loop_sequence.update_item("SOURCE_URL", url)
@@ -358,11 +326,12 @@ class Sequence:
 
             step_property = str(step).split(':')[0]
 
+            # print(self.item.__dict__)
             if step_property != '':
-                if self.item.get(step_property) is None:
+                if self.item.get(name=step_property) is None:
                     print(Fore.RED + f'{step_property} is an incorrect attribute')
                     continue
-                elif self.item.get(step_property) != '':
+                elif self.item.get(name=step_property) != '':
                     print(Fore.RED + f'property {step_property} is already set')
                     continue
 
@@ -422,6 +391,7 @@ class Sequence:
                     finder.close()
 
             elif ':get' in step:
+                # print('get')
 
                 if step_property == "":
                     if ":all" in step:
