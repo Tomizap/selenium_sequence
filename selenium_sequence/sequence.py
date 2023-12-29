@@ -98,7 +98,7 @@ class Sequence:
     # item = item.__dict__
     try:
         COMPANY_PHONE = item.get('COMPANY_PHONE', '') if item.get('COMPANY_PHONE', '') != '' else 0
-        COMPANY_EMAIL = item.get('COMPANY_EMAIL', '') if item.get('COMPANY_EMAIL', '') != '' else 0
+        # COMPANY_EMAIL = item.get('COMPANY_EMAIL', '') if item.get('COMPANY_EMAIL', '') != '' else 0
         SOURCE_URL = item.get('SOURCE_URL', '') if item.get('SOURCE_URL', '') != '' else 0
         ie = mongo({
             "db": "contacts",
@@ -106,7 +106,7 @@ class Sequence:
             'selector': {
                 "$or": [
                     {"COMPANY_PHONE": COMPANY_PHONE}, 
-                    {"COMPANY_EMAIL": COMPANY_EMAIL}, 
+                    # {"COMPANY_EMAIL": COMPANY_EMAIL}, 
                     {"SOURCE_URL": SOURCE_URL}, 
                 ]
             }

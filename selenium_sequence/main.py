@@ -11,6 +11,8 @@ from .models import find_model
 from .chrono import Chronos
 from .items import *
 
+NB_MAX_THREADS = 30
+
 
 class Automnation:
 
@@ -158,7 +160,7 @@ class Automnation:
             
         active_threads = []
 
-        for _ in range(20):
+        for _ in range(NB_MAX_THREADS):
             thread = threading.Thread(target=self.thread_runner)
             thread.start()
             active_threads.append(thread)
